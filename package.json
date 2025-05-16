@@ -1,0 +1,9 @@
+{
+  "name": "kubo",
+  "private": true,
+  "workspaces": ["frontend", "backend", "shared"],
+  "scripts": {
+    "start-frontend": "cd front && pnpm dev",
+    "start-backend": "cd back && pnpm start:dev"
+  }
+}
