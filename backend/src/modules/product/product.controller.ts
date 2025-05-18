@@ -16,6 +16,7 @@ import { ProductService } from './product.service';
 import { Product } from '@prisma/client';
 import { GetProductDto, ProductDto } from './dto/product.dto';
 import { Public } from '../auth/common/decorators/public.decorator';
+import { GetResponse } from '@/interfaces/getResponse';
 
 @Controller('product')
 export class ProductController {
@@ -24,14 +25,14 @@ export class ProductController {
   @Public()
   @Get()
   @HttpCode(HttpStatus.OK)
-  async getProducts(): Promise<GetProductDto[]> {
-    return this.productService.getProducts();
+  async getProducts(@Param('page') page: number = 1, @Param('limit') limit: number = 10): Promise<GetResponse<GetProductDto[]>> {
+    return this.productService.getProducts(page, limit);
   }
 
   @Public()
   @Get(':id')
-  @HttpCode(HttpStatus.FOUND)
-  async getProduct(@Param('id') id: number): Promise<GetProductDto> {
+  @HttpCode(HttpStatus.OK)
+  async getProduct(@Param('id') id: number): Promise<GetResponse<GetProductDto>> {
     return this.productService.getProduct(id);
   }
 

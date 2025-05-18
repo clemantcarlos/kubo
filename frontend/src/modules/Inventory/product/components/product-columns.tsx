@@ -13,18 +13,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+// TYPES
+import { Product } from '../types/product'
+import { Link } from 'react-router'
+import { ProductDialog } from './product-dialog'
 
-type Product = {
-  name: string;
-  id: number;
-  description: string | null;
-  stock: number;
-  price: number;
-  isAvailable: boolean;
-  storageUnit: {name:string};
-  category: {name:string};
-}
- 
 export const columns: ColumnDef<Product>[] = [
   {
     accessorKey: "id",
@@ -91,7 +84,7 @@ export const columns: ColumnDef<Product>[] = [
   },
   {
     id: "actions",
-    header: () => <div className="text-right">Actions</div>,
+    header: () => <div className="text-right">Acciones</div>,
     cell: ({ row }) => {
       const productId: string = row.getValue("id")  
       return (
@@ -104,14 +97,14 @@ export const columns: ColumnDef<Product>[] = [
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem
-                onClick={() => navigator.clipboard.writeText(productId)}
-              >
-                Copia el id del producto
+              <DropdownMenuItem>
+                <Link to={`${productId}`}>Detalles del producto</Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>View customer</DropdownMenuItem>
-              <DropdownMenuItem>View payment details</DropdownMenuItem>
+              <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                <ProductDialog actionType="update" id={Number(productId)} />
+              </DropdownMenuItem>
+              <DropdownMenuItem>Eliminar Producto</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

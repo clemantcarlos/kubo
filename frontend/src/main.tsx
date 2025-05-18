@@ -16,7 +16,7 @@ import Home from "@/modules/dashboard/pages/Home";
 import Tables from "@/modules/restaurant/page/Tables";
 import Table from "@/modules/restaurant/page/Table";
 // INVENTORY
-import Products from "@/modules/Inventory/pages/Products";
+import Products from "@/modules/Inventory/pages/Product";
 //CONTEXT
 import { UserProvider } from "@/context/user";
 // CSS

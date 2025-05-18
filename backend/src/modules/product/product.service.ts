@@ -1,35 +1,57 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma, Product } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { GetProductDto, ProductDto } from './dto/product.dto';
+import { GetResponse } from '@/interfaces/getResponse';
 
 @Injectable()
 export class ProductService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async getProducts(): Promise<GetProductDto[]> {
+  async getProducts(page: number = 1, limit: number = 10): Promise<GetResponse<GetProductDto[]>> {
     try {
-      return await this.prisma.product.findMany({
-        select: {
-          id: true,
-          name: true,
-          description: true,
-          stock: true,
-          price: true,
-          isAvailable: true,
-          category: { select: { name: true } },
-          storageUnit: { select: { name: true } },
+      const [products, total] = await this.prisma.$transaction([
+        this.prisma.product.findMany({
+          select: {
+            id: true,
+            name: true,
+            description: true,
+            stock: true,
+            price: true,
+            isAvailable: true,
+            category: { select: { name: true } },
+            storageUnit: { select: { name: true } },
+          },
+          skip: (page - 1) * limit,
+          take: limit,
+          orderBy: { id: 'asc' },
+        }),
+        this.prisma.product.count(),
+      ]);
+
+      return {
+        success: true,
+        data: products,
+        meta: {
+          total,
+          page,
+          totalPages: Math.ceil(total / limit),
         },
-      });
+      };
     } catch (e) {
+      if (e instanceof Prisma.PrismaClientKnownRequestError) {
+        if (e.code === 'P5010') {
+          throw new NotFoundException('Products not found');
+        }
+      }
       throw new BadRequestException(e);
     }
   }
 
-  async getProduct(id: number): Promise<GetProductDto> {
+  async getProduct(id: number): Promise<GetResponse<GetProductDto>> {
     const parsedId = Number(id);
     try {
-      return await this.prisma.product.findUnique({
+       const product = await this.prisma.product.findUnique({
         where: {
           id: parsedId,
         },
@@ -40,10 +62,20 @@ export class ProductService {
           stock: true,
           price: true,
           isAvailable: true,
-          category: { select: { name: true } },
-          storageUnit: { select: { name: true } },
+          category: { select: { id:true, name: true } },
+          storageUnit: { select: { id:true, name: true } },
         },
       });
+
+      return {
+        success: true,
+        data: product,
+        meta: {
+          total: 1,
+          page:1,
+          totalPages: 1,
+        },
+      };
     } catch (e) {
       throw new BadRequestException(e);
     }

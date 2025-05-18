@@ -1,65 +1,37 @@
-/*
-  Warnings:
+-- CreateTable
+CREATE TABLE "User" (
+    "id" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "email" TEXT NOT NULL,
+    "identityDocument" TEXT NOT NULL,
+    "phoneNumber" TEXT NOT NULL,
+    "address" TEXT NOT NULL,
+    "password" TEXT NOT NULL,
+    "hashedRt" TEXT,
+    "isDeleted" BOOLEAN NOT NULL DEFAULT false,
+    "deletedAt" TIMESTAMP(3),
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "roleId" INTEGER NOT NULL,
+    "identityDocumentTypeId" INTEGER NOT NULL,
 
-  - You are about to drop the column `image` on the `Product` table. All the data in the column will be lost.
-  - You are about to drop the column `cedula` on the `User` table. All the data in the column will be lost.
-  - You are about to drop the `Cart` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `Category` table. If the table is not empty, all the data it contains will be lost.
-  - A unique constraint covering the columns `[identityDocument]` on the table `User` will be added. If there are existing duplicate values, this will fail.
-  - Added the required column `storageUnitId` to the `Product` table without a default value. This is not possible if the table is not empty.
-  - Added the required column `identityDocument` to the `User` table without a default value. This is not possible if the table is not empty.
-  - Added the required column `identityDocumentTypeId` to the `User` table without a default value. This is not possible if the table is not empty.
-  - Added the required column `roleId` to the `User` table without a default value. This is not possible if the table is not empty.
-
-*/
--- DropForeignKey
-ALTER TABLE "Cart" DROP CONSTRAINT "Cart_productId_fkey";
-
--- DropForeignKey
-ALTER TABLE "Cart" DROP CONSTRAINT "Cart_userId_fkey";
-
--- DropForeignKey
-ALTER TABLE "Product" DROP CONSTRAINT "Product_categoryId_fkey";
-
--- DropIndex
-DROP INDEX "Product_name_key";
-
--- DropIndex
-DROP INDEX "User_cedula_key";
-
--- AlterTable
-ALTER TABLE "Product" DROP COLUMN "image",
-ADD COLUMN     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-ADD COLUMN     "storageUnitId" INTEGER NOT NULL,
-ADD COLUMN     "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-ALTER COLUMN "description" DROP NOT NULL;
-
--- AlterTable
-ALTER TABLE "User" DROP COLUMN "cedula",
-ADD COLUMN     "identityDocument" TEXT NOT NULL,
-ADD COLUMN     "identityDocumentTypeId" TEXT NOT NULL,
-ADD COLUMN     "roleId" TEXT NOT NULL;
-
--- DropTable
-DROP TABLE "Cart";
-
--- DropTable
-DROP TABLE "Category";
+    CONSTRAINT "User_pkey" PRIMARY KEY ("id")
+);
 
 -- CreateTable
-CREATE TABLE "UserIdentityDocuemntType" (
-    "id" TEXT NOT NULL,
+CREATE TABLE "UserIdentityDocumentType" (
+    "id" SERIAL NOT NULL,
     "name" TEXT NOT NULL,
     "description" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT "UserIdentityDocuemntType_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "UserIdentityDocumentType_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "user_roles" (
-    "id" TEXT NOT NULL,
+    "id" SERIAL NOT NULL,
     "name" TEXT NOT NULL,
     "description" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -73,7 +45,7 @@ CREATE TABLE "UserRolePermission" (
     "id" TEXT NOT NULL,
     "grant" BOOLEAN NOT NULL DEFAULT false,
     "permissionId" TEXT NOT NULL,
-    "roleId" TEXT NOT NULL,
+    "roleId" INTEGER NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
@@ -115,6 +87,22 @@ CREATE TABLE "OrderItem" (
 );
 
 -- CreateTable
+CREATE TABLE "Product" (
+    "id" SERIAL NOT NULL,
+    "name" TEXT NOT NULL,
+    "description" TEXT,
+    "stock" INTEGER NOT NULL,
+    "price" DOUBLE PRECISION NOT NULL,
+    "isAvailable" BOOLEAN NOT NULL DEFAULT true,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "storageUnitId" INTEGER NOT NULL,
+    "categoryId" INTEGER NOT NULL,
+
+    CONSTRAINT "Product_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "ProductStorageUnit" (
     "id" SERIAL NOT NULL,
     "name" TEXT NOT NULL,
@@ -137,8 +125,29 @@ CREATE TABLE "ProductCategory" (
     CONSTRAINT "ProductCategory_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
+CREATE TABLE "Task" (
+    "id" SERIAL NOT NULL,
+    "title" TEXT NOT NULL,
+    "description" TEXT,
+    "status" TEXT NOT NULL DEFAULT 'pending',
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "Task_pkey" PRIMARY KEY ("id")
+);
+
 -- CreateIndex
-CREATE UNIQUE INDEX "UserIdentityDocuemntType_name_key" ON "UserIdentityDocuemntType"("name");
+CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "User_identityDocument_key" ON "User"("identityDocument");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "User_phoneNumber_key" ON "User"("phoneNumber");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "UserIdentityDocumentType_name_key" ON "UserIdentityDocumentType"("name");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "user_roles_name_key" ON "user_roles"("name");
@@ -149,14 +158,11 @@ CREATE UNIQUE INDEX "UserRolePermission_roleId_permissionId_key" ON "UserRolePer
 -- CreateIndex
 CREATE UNIQUE INDEX "Permission_code_key" ON "Permission"("code");
 
--- CreateIndex
-CREATE UNIQUE INDEX "User_identityDocument_key" ON "User"("identityDocument");
-
 -- AddForeignKey
 ALTER TABLE "User" ADD CONSTRAINT "User_roleId_fkey" FOREIGN KEY ("roleId") REFERENCES "user_roles"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "User" ADD CONSTRAINT "User_identityDocumentTypeId_fkey" FOREIGN KEY ("identityDocumentTypeId") REFERENCES "UserIdentityDocuemntType"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "User" ADD CONSTRAINT "User_identityDocumentTypeId_fkey" FOREIGN KEY ("identityDocumentTypeId") REFERENCES "UserIdentityDocumentType"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "UserRolePermission" ADD CONSTRAINT "UserRolePermission_permissionId_fkey" FOREIGN KEY ("permissionId") REFERENCES "Permission"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

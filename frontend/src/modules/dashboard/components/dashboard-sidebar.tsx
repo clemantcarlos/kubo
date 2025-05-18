@@ -1,15 +1,11 @@
 import { ChevronRight } from "lucide-react";
 import { SearchForm } from "../components/search-form";
 import { VersionSwitcher } from "../components/version-switcher";
-
-
-
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-
 import {
   Sidebar,
   SidebarContent,
@@ -24,7 +20,6 @@ import {
 } from "@/components/ui/sidebar";
 import { Link, useMatches } from "react-router";
 
-// This is sample data.
 const data = {
   versions: ["1.0.1", "1.1.0-alpha", "2.0.0-beta1"],
   navMain: [

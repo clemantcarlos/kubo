@@ -75,9 +75,9 @@ export class GetProductDto {
 
   @IsNotEmpty()
   @IsObject()
-  category: { name: string };
+  category: { id?:number, name: string };
 
   @IsNotEmpty()
   @IsObject()
-  storageUnit: { name: string };
+  storageUnit: { id?:number, name: string };
 }

@@ -1,67 +1,71 @@
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
-import { z } from "zod"
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 // UI
-import { Textarea } from "@/components/ui/textarea"
+import { Textarea } from "@/components/ui/textarea";
 import {
   Form,
-  FormControl,  FormField,
+  FormControl,
+  FormField,
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form"
+} from "@/components/ui/form";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import { Input } from "@/components/ui/input"
+} from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
 // INTERFACES
-import { ProductDialogProps } from "../interfaces/product"
+import { ProductDialogProps } from "../interfaces/producDialogProps";
 // UTILS
-import { passwordRegex, phoneRegex } from "@/utils/contants.regex"
+import { passwordRegex, phoneRegex } from "@/utils/contants.regex";
 
 const formSchema = z.object({
-  name: z.string()
-  .min(2, {
-    message: "El nombre debe tener al menos 2 caracteres.",
-  })
-  .max(255, {
-    message: "El nombre no puede tener más de 255 caracteres.",
-  }),
+  name: z
+    .string()
+    .min(2, {
+      message: "El nombre debe tener al menos 2 caracteres.",
+    })
+    .max(255, {
+      message: "El nombre no puede tener más de 255 caracteres.",
+    }),
   email: z.string().email({
     message: "El email no es valido.",
   }),
   phoneNumber: z.string().regex(phoneRegex, {
     message: "El numero de telefono no es valido.",
   }),
-  address: z.string()
-  .min(2, {
-    message: "La direccion no puede ser vacia.",
-  })
-  .max(255, {
-    message: "La direccion no puede tener mas de 255 caracteres.",
-  }),
+  address: z
+    .string()
+    .min(2, {
+      message: "La direccion no puede ser vacia.",
+    })
+    .max(255, {
+      message: "La direccion no puede tener mas de 255 caracteres.",
+    }),
   password: z.string().regex(passwordRegex, {
     message: "La contraseña no es valida.",
   }),
-  identityDocument: z.string({
-    required_error: "Por favor ingrese el documento de identidad.",
-  })
-  .min(2, {
-    message: "El documento de identidad no puede ser vacio.",
-  }),
+  identityDocument: z
+    .string({
+      required_error: "Por favor ingrese el documento de identidad.",
+    })
+    .min(2, {
+      message: "El documento de identidad no puede ser vacio.",
+    }),
   identityDocumentTypeId: z.string({
     required_error: "Por favor seleccione el tipo de documento de identidad.",
   }),
   roleId: z.string({
     required_error: "Por favor seleccione el rol.",
   }),
-})
+});
 
-export function ProductForm({actionType}: ProductDialogProps) {
+export function ProductForm({ actionType }: ProductDialogProps) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -74,10 +78,9 @@ export function ProductForm({actionType}: ProductDialogProps) {
       identityDocumentTypeId: "1",
       roleId: "2",
     },
-  })
+  });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    
     const apiData = {
       ...values,
       identityDocumentTypeId: Number(values.identityDocumentTypeId),
@@ -88,7 +91,11 @@ export function ProductForm({actionType}: ProductDialogProps) {
 
   return (
     <Form {...form}>
-      <form id = 'product-form' onSubmit={form.handleSubmit(onSubmit)} className="grid grid-cols-2 auto-rows-min gap-x-4 gap-y-10">
+      <form
+        id="product-form"
+        onSubmit={form.handleSubmit(onSubmit)}
+        className="grid grid-cols-2 auto-rows-min gap-x-4 gap-y-10"
+      >
         <FormField
           control={form.control}
           name="name"
@@ -103,23 +110,26 @@ export function ProductForm({actionType}: ProductDialogProps) {
           )}
         />
         <div>
-            <FormLabel className="mb-4">Documento de identidad</FormLabel>
+          <FormLabel className="mb-4">Documento de identidad</FormLabel>
           <div className="flex gap-2">
             <FormField
               control={form.control}
               name="identityDocumentTypeId"
               render={({ field }) => (
                 <FormItem>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue  placeholder={field.value} />
+                        <SelectValue placeholder={field.value} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value = "1"> V </SelectItem>
-                      <SelectItem value = "2"> J </SelectItem>
-                      <SelectItem value = "3"> E </SelectItem>
+                      <SelectItem value="1"> V </SelectItem>
+                      <SelectItem value="2"> J </SelectItem>
+                      <SelectItem value="3"> E </SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -167,7 +177,7 @@ export function ProductForm({actionType}: ProductDialogProps) {
             </FormItem>
           )}
         />
-         <FormField
+        <FormField
           control={form.control}
           name="roleId"
           render={({ field }) => (
@@ -201,7 +211,7 @@ export function ProductForm({actionType}: ProductDialogProps) {
             </FormItem>
           )}
         />
-         <FormField
+        <FormField
           control={form.control}
           name="address"
           render={({ field }) => (
@@ -220,6 +230,5 @@ export function ProductForm({actionType}: ProductDialogProps) {
         />
       </form>
     </Form>
-  )
+  );
 }
-

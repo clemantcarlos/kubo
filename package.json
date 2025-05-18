@@ -3,7 +3,7 @@
   "private": true,
   "workspaces": ["frontend", "backend", "shared"],
   "scripts": {
-    "start-frontend": "cd front && pnpm dev",
-    "start-backend": "cd back && pnpm start:dev"
+    "start:frontend": "cd frontend && pnpm dev",
+    "start:backend": "cd backend && pnpm start:dev"
   }
 }
