@@ -28,7 +28,6 @@ import { PlusIcon } from "lucide-react"
 import { ProductCategory } from "../interfaces/productCategory"
 import { StorageUnit } from "../interfaces/storageUnit"
 import { ProductDialogProps } from "../interfaces/producDialogProps"
-
 export function ProductForm({ actionType, id }: ProductDialogProps) {  
   const { form, onSubmit, onUpdate, categories, storageUnits } = useProductForm(id)
   return (

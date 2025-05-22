@@ -2,22 +2,13 @@ import pluralize from '@/lib/pluralize'
 // TABLE
 import { ColumnDef } from "@tanstack/react-table"
 // ICONS
-import { MoreHorizontal, ArrowUpDown} from "lucide-react"
+import { ArrowUpDown } from "lucide-react"
 //  COMPONENTS
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
 // TYPES
 import { Product } from '../types/product'
-import { Link } from 'react-router'
-import { ProductDialog } from './product-dialog'
-
+import ProductActionColumn from './product-action-column'
 export const columns: ColumnDef<Product>[] = [
   {
     accessorKey: "id",
@@ -85,32 +76,10 @@ export const columns: ColumnDef<Product>[] = [
   {
     id: "actions",
     header: () => <div className="text-right">Acciones</div>,
-    cell: ({ row }) => {
-      const productId: string = row.getValue("id")  
-      return (
-        <div className="text-right">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-8 w-8 p-0">
-                <span className="sr-only">Open menu</span>
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem>
-                <Link to={`${productId}`}>Detalles del producto</Link>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                <ProductDialog actionType="update" id={Number(productId)} />
-              </DropdownMenuItem>
-              <DropdownMenuItem>Eliminar Producto</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      )
+    cell: ({row})  =>{
+      const productId = row.getValue("id")  
+      return <ProductActionColumn id = {Number(productId)} />
     },
-    
   },
   
 ]
