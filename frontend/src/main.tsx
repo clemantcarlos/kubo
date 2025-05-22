@@ -21,7 +21,9 @@ import Products from "@/modules/Inventory/pages/Product";
 import { UserProvider } from "@/context/user";
 // CSS
 import "@/index.css";
+import { Toaster } from "sonner";
 
+// TODO: CREATE PRODUCT DETAIL PAGE
 const router = createBrowserRouter([
   {
     path: "/",
@@ -93,11 +95,12 @@ const router = createBrowserRouter([
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
+    <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
       <UserProvider>
         <RouterProvider router={router} />
+        <Toaster theme="system"/>
+        <ModeToggle />
       </UserProvider>
-      <ModeToggle />
     </ThemeProvider>
   </StrictMode>
 );
