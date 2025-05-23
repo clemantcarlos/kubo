@@ -3,9 +3,10 @@ import { createRoot } from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router";
 // PROTECTED ROUTES
 import ProtectedRoute from "@/components/auth/components/ProtectedRoute";
-// THEME
+// UI
 import { ThemeProvider } from "@/components/theme/ThemeProvider";
 import { ModeToggle } from "@/components/theme/ModeToggle";
+import { Toaster } from "sonner";
 // ROUTER COMPONENTS
 // AUTH
 import LogInPage from "@/modules/auth/pages/LogIng";
@@ -16,12 +17,12 @@ import Home from "@/modules/dashboard/pages/Home";
 import Tables from "@/modules/restaurant/page/Tables";
 import Table from "@/modules/restaurant/page/Table";
 // INVENTORY
-import Products from "@/modules/Inventory/pages/Product";
+import Products from "@/modules/Inventory/pages/Products";
+import Product from "./modules/Inventory/pages/Product";
 //CONTEXT
 import { UserProvider } from "@/context/user";
 // CSS
 import "@/index.css";
-import { Toaster } from "sonner";
 
 // TODO: CREATE PRODUCT DETAIL PAGE
 const router = createBrowserRouter([
@@ -50,14 +51,14 @@ const router = createBrowserRouter([
       },
       {
         path: "tables",
-        handle: {
-          crumbModule: "Restaurante",
-          crumb: "Mesas",
-        },
         children: [
           {
             index: true,
             element: <Tables />,
+            handle: {
+            crumbModule: "Restaurante",
+            crumb: "Mesas",
+          },
           },
           {
             path: ":id",
@@ -79,11 +80,25 @@ const router = createBrowserRouter([
       },
       {
         path: 'products',
-        element: <Products />,
-        handle: {
-          crumbModule: "Inventario",
-          crumb: "Productos",
-        },
+        children: [
+          {
+            index: true,
+            element: <Products />,
+            handle: {
+              crumbModule: "Inventario",
+              crumb: "Productos",
+            },
+          },
+          {
+            path: ":id",
+            element: <Product />,
+            handle: {
+              crumbModule: "Inventario",
+              crumb: "Producto",
+              subCrumb: "Detalles",
+            },
+          }
+        ]
       }
     ],
   },

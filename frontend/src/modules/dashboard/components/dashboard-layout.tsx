@@ -17,18 +17,18 @@ import { Outlet, useMatches } from "react-router"
 export default function DashboardLayout() {
 
   const matches = useMatches() as unknown as Array<{
-    handle: { crumb?: string, crumbModule?: string };
+    handle: { crumb?: string, crumbModule?: string, subCrumb?: string };
     pathname: string;
   }>;
 
   const crumbs = matches
-    .filter((match) => match.handle?.crumb)
-    .map((match) => ({
-      module: match.handle.crumbModule as string,
-      crumb: match.handle.crumb as string
-      ,
-    }));
-
+  .filter((match) => match.handle?.crumb)
+  .map((match) => ({
+    module: match.handle.crumbModule as string,
+    crumb: match.handle.crumb as string,
+    subcrumb: match.handle.subCrumb as string
+  }));
+  
   return (
     <SidebarProvider>
       <DashboardSidebar />
@@ -39,7 +39,7 @@ export default function DashboardLayout() {
           <Breadcrumb>
             <BreadcrumbList>
               <BreadcrumbItem className="hidden md:block">
-                <BreadcrumbLink href="#">
+                <BreadcrumbLink>
                   {crumbs[0].module ? crumbs[0].module : 'Home'}
                 </BreadcrumbLink>
               </BreadcrumbItem>
@@ -49,6 +49,14 @@ export default function DashboardLayout() {
                   {crumbs[0].crumb ? crumbs[0].crumb : 'Dashboard'}
                 </BreadcrumbPage>
               </BreadcrumbItem>
+              {crumbs[0].subcrumb && <BreadcrumbSeparator className="hidden md:block" />}
+              {crumbs[0].subcrumb &&
+                <BreadcrumbItem>
+                  <BreadcrumbPage>
+                    {crumbs[0].subcrumb}
+                  </BreadcrumbPage>
+                </BreadcrumbItem>
+              }
             </BreadcrumbList>
           </Breadcrumb>
         </header>

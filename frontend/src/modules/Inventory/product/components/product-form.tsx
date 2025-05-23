@@ -28,6 +28,8 @@ import { PlusIcon } from "lucide-react"
 import { ProductCategory } from "../interfaces/productCategory"
 import { StorageUnit } from "../interfaces/storageUnit"
 import { ProductDialogProps } from "../interfaces/producDialogProps"
+// TODO: CUANDO HAGA SUBMIT TIENE QUE SALIRSE
+// TODO: QUE SALGA EL MENSAJE DE EXITO O ERROR AL HACER SUBMIT
 export function ProductForm({ actionType, id }: ProductDialogProps) {  
   const { form, onSubmit, onUpdate, categories, storageUnits } = useProductForm(id)
   return (
