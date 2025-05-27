@@ -110,6 +110,7 @@ model Product {
   description String?
   stock       Int
   price       Float
+  imageUrl    String?
 
   isAvailable Boolean @default(true)
 

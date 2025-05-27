@@ -9,14 +9,25 @@ import {
   Param,
   Post,
   Put,
+  UploadedFile,
+  UseInterceptors,
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
+// Product
+import { GetProductDto, ProductDto } from './dto/product.dto';
 import { ProductService } from './product.service';
 import { Product } from '@prisma/client';
-import { GetProductDto, ProductDto } from './dto/product.dto';
+// Multer
+import { diskStorage } from 'multer';
+import { FileInterceptor } from '@nestjs/platform-express';
+// Auth
 import { Public } from '../auth/common/decorators/public.decorator';
+// Interfaces
 import { GetResponse } from '@/interfaces/getResponse';
+// Utils
+import { extname } from 'path';
+import { randomUUID } from 'crypto';
 
 @Controller('product')
 export class ProductController {
@@ -40,8 +51,25 @@ export class ProductController {
   @Post()
   @HttpCode(HttpStatus.CREATED)
   @UsePipes(new ValidationPipe())
-  async createProduct(@Body() product: ProductDto) {
-    return this.productService.createProduct(product);
+  @UseInterceptors(
+    FileInterceptor('image', {
+      storage: diskStorage({
+        destination: './uploads/products',
+        filename: (req, file, cb) => {
+          const ext = extname(file.originalname);
+          const filename = `${randomUUID()}${ext}`;
+          cb(null, filename);
+        },
+      }),
+      limits: { fileSize: 2 * 1024 * 1024 }, // 2MB
+    }),
+  )
+  async createProduct(
+    @UploadedFile() file: Express.Multer.File,
+    @Body() product: ProductDto
+  ) {
+    const imageUrl = file ? `/uploads/products/${file.filename}` : null;
+    return this.productService.createProduct({ ...product, imageUrl });
   }
 
   @Public()

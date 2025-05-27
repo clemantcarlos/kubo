@@ -19,6 +19,7 @@ export class ProductService {
             stock: true,
             price: true,
             isAvailable: true,
+            imageUrl: true,
             category: { select: { name: true } },
             storageUnit: { select: { name: true } },
           },
@@ -62,6 +63,7 @@ export class ProductService {
           stock: true,
           price: true,
           isAvailable: true,
+          imageUrl: true, 
           category: { select: { id:true, name: true } },
           storageUnit: { select: { id:true, name: true } },
         },
@@ -81,10 +83,13 @@ export class ProductService {
     }
   }
 
-  async createProduct(product: ProductDto) {
+  async createProduct(product: ProductDto & { imageUrl?: string }) {
     try {
       const newProduct = await this.prisma.product.create({
-        data: product,
+         data: {
+          ...product,
+          imageUrl: product.imageUrl || null,
+        },
       });
       return newProduct;
     } catch (e) {

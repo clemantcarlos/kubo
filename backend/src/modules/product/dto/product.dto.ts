@@ -80,4 +80,8 @@ export class GetProductDto {
   @IsNotEmpty()
   @IsObject()
   storageUnit: { id?:number, name: string };
+
+  @IsString()
+  @IsOptional()
+  imageUrl?: string;
 }
