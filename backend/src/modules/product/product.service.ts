@@ -1,7 +1,10 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+// PRISMA
 import { Prisma, Product } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
+// DTO
 import { GetProductDto, ProductDto } from './dto/product.dto';
+// INTERFACES
 import { GetResponse } from '@/interfaces/getResponse';
 
 @Injectable()
