@@ -111,6 +111,7 @@ model Product {
   stock       Int
   price       Float
   imageUrl    String?
+  imageHash   String?  @unique
 
   isAvailable Boolean @default(true)
 

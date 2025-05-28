@@ -27,7 +27,7 @@ import { Public } from '../auth/common/decorators/public.decorator';
 import { GetResponse } from '@/interfaces/getResponse';
 // Utils
 import { extname } from 'path';
-import { randomUUID } from 'crypto';
+import { createHash, randomUUID } from 'crypto';
 
 @Controller('product')
 export class ProductController {
@@ -52,24 +52,30 @@ export class ProductController {
   @HttpCode(HttpStatus.CREATED)
   @UsePipes(new ValidationPipe())
   @UseInterceptors(
-    FileInterceptor('image', {
+      FileInterceptor('image', {
       storage: diskStorage({
-        destination: './uploads/products',
+        destination: './uploads', // guarda localmente por ahora
         filename: (req, file, cb) => {
-          const ext = extname(file.originalname);
-          const filename = `${randomUUID()}${ext}`;
-          cb(null, filename);
+          const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+          cb(null, `${file.fieldname}-${uniqueSuffix}${extname(file.originalname)}`);
         },
       }),
-      limits: { fileSize: 2 * 1024 * 1024 }, // 2MB
     }),
   )
   async createProduct(
     @UploadedFile() file: Express.Multer.File,
     @Body() product: ProductDto
   ) {
-    const imageUrl = file ? `/uploads/products/${file.filename}` : null;
-    return this.productService.createProduct({ ...product, imageUrl });
+    const buffer = file.buffer ?? await import('fs/promises').then(fs => fs.readFile(file.path));
+    const hash = createHash('sha256').update(buffer).digest('hex');
+
+    const imageUrl = `/uploads/${file.filename}`;
+
+    return this.productService.createProduct({
+      ...product,
+      imageUrl,
+      imageHash: hash,
+    });
   }
 
   @Public()

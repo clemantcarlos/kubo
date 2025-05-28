@@ -6,6 +6,8 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { GetProductDto, ProductDto } from './dto/product.dto';
 // INTERFACES
 import { GetResponse } from '@/interfaces/getResponse';
+// Utils
+import { promises as fs } from 'fs';
 
 @Injectable()
 export class ProductService {
@@ -86,12 +88,23 @@ export class ProductService {
     }
   }
 
-  async createProduct(product: ProductDto & { imageUrl?: string }) {
+  async createProduct(product: ProductDto & { imageUrl?: string } & { imageHash?: string }) {
     try {
+      const existing = await this.prisma.product.findUnique({
+        where: { imageHash: product.imageHash },
+      });
+
+      if (existing) {
+        await fs.unlink('.' + product.imageUrl); // ❌ elimina la imagen
+        throw new BadRequestException('Esta imagen ya fue subida.');
+      }
       const newProduct = await this.prisma.product.create({
          data: {
           ...product,
-          imageUrl: product.imageUrl || null,
+          price: Number(product.price),
+          stock: Number(product.stock),
+          categoryId: Number(product.categoryId),
+          storageUnitId: Number(product.storageUnitId),
         },
       });
       return newProduct;
@@ -107,6 +120,7 @@ export class ProductService {
         }
         throw new BadRequestException(e);
       }
+      console.log(e);
       throw new BadRequestException(e);
     }
   }

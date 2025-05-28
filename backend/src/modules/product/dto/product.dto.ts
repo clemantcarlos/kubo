@@ -1,3 +1,4 @@
+import { Transform } from 'class-transformer';
 import {
   IsBoolean,
   IsDateString,
@@ -21,18 +22,22 @@ export class ProductDto {
   @IsNotEmpty()
   description: string;
 
+  @Transform(({ value }) => Number(value))
   @IsNumber()
   @IsNotEmpty()
   stock: number;
 
+  @Transform(({ value }) => Number(value))
   @IsNumber()
   @IsNotEmpty()
   price: number;
 
+  @Transform(({ value }) => Number(value))
   @IsNumber()
   @IsNotEmpty()
   storageUnitId: number;
 
+  @Transform(({ value }) => Number(value))
   @IsNumber()
   @IsNotEmpty()
   categoryId: number;
@@ -48,6 +53,7 @@ export class ProductDto {
   @IsDateString()
   @IsOptional()
   updatedAt?: string;
+
 }
 export class GetProductDto {
   @IsNumber()
