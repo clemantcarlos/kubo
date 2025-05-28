@@ -31,11 +31,11 @@ import { ProductDialogProps } from "../interfaces/producDialogProps"
 // TODO: CUANDO HAGA SUBMIT TIENE QUE SALIRSE
 // TODO: QUE SALGA EL MENSAJE DE EXITO O ERROR AL HACER SUBMIT
 export function ProductForm({ actionType, id }: ProductDialogProps) {  
-  const { form, onSubmit, onUpdate, categories, storageUnits } = useProductForm(id)
+  const { form, onCreate, onUpdate, categories, storageUnits } = useProductForm(id)
   return (
     <Form {...form}>
       <form id = 'product-form' 
-        onSubmit = {  actionType === "create" ? form.handleSubmit(onSubmit) : form.handleSubmit(onUpdate)} 
+        onSubmit = {  actionType === "create" ? form.handleSubmit(onCreate) : form.handleSubmit(onUpdate)} 
         className="grid grid-cols-2 auto-rows-min gap-x-4 gap-y-10">
         <FormField
           control={form.control}
@@ -104,6 +104,24 @@ export function ProductForm({ actionType, id }: ProductDialogProps) {
         <PriceInputFormField name="price" control={form.control} />
         <FormField
           control={form.control}
+          name="image"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Imagen</FormLabel>
+              <FormControl>
+                <Input type="file"  accept="image/*" onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    field.onChange(file)
+                  }
+                }} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
           name="description"
           render={({ field }) => (
             <FormItem className="col-span-2">
@@ -115,7 +133,14 @@ export function ProductForm({ actionType, id }: ProductDialogProps) {
             </FormItem>
           )}
         />
-      <Button className="col-span-2" type="submit">Continuar</Button>
+        {/* {form.watch("image") instanceof File && (
+          <img
+            src={URL.createObjectURL(form.watch("image"))}
+            alt="Preview"
+            className="w-24 h-24 object-cover rounded"
+          />
+        )} */}
+      <Button className="col-span-2" type="submit">Agregar</Button>
       </form>
     </Form>
   )

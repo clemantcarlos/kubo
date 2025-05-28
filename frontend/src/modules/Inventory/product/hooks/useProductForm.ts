@@ -9,19 +9,19 @@ import { Product } from "../types/product"
 import { getQuery } from "@/lib/api/queries"
 const formSchema = z.object({
   name: z.string()
-  .min(2, {
-    message: "El nombre debe tener al menos 2 caracteres.",
-  })
-  .max(255, {
-    message: "El nombre no puede tener más de 255 caracteres.",
-  }),
+    .min(2, {
+      message: "El nombre debe tener al menos 2 caracteres.",
+    })
+    .max(255, {
+      message: "El nombre no puede tener más de 255 caracteres.",
+    }),
   description: z.string()
-  .min(2, {
-    message: "La descripción debe tener al menos 2 caracteres.",
-  })
-  .max(255, {
-    message: "La descripción no puede tener más de 255 caracteres.",
-  }),
+    .min(2, {
+      message: "La descripción debe tener al menos 2 caracteres.",
+    })
+    .max(255, {
+      message: "La descripción no puede tener más de 255 caracteres.",
+    }),
   stock: z.number().min(1, {
     message: "El stock debe ser mayor a 1.",
   }),
@@ -33,7 +33,11 @@ const formSchema = z.object({
   }),
   categoryId: z.string({
     required_error: "Por favor seleccione la categoría.",
-  }) 
+  }),
+  image: z.any()
+    .refine((file) => file instanceof File || file?.length > 0, {
+      message: "La imagen es obligatoria",
+    }),
 })
 
 const getCategories = async () => {
@@ -111,25 +115,32 @@ export default function useProductForm(id?: number) {
         storageUnitId: String(product?.storageUnit.id),
         categoryId: String(product?.category.id),
       })
-      console.log(product)
     }
   }, [product, id, form])
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
-    const apiData = {
-      ...values,
-      storageUnitId: Number(values.storageUnitId),
-      categoryId: Number(values.categoryId),
-    };
-    const newProduct = await fetch(API_ENDPOINTS.PRODUCTS.BASE, {
+  async function onCreate(values: z.infer<typeof formSchema>) {
+    const { 
+      name, 
+      description, 
+      stock, price, 
+      storageUnitId, 
+      categoryId, 
+      image
+    } = values
+    
+    const formData = new FormData();
+    formData.append("name", name);
+    formData.append("description", description);
+    formData.append("stock", String(stock));
+    formData.append("price", String(price));
+    formData.append("storageUnitId", String(storageUnitId));
+    formData.append("categoryId", String(categoryId));
+    formData.append("image", image);
+
+    await fetch(API_ENDPOINTS.PRODUCTS.BASE, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(apiData),
+      body: formData,
     })
-    const data = await newProduct.json()
-    console.log(data)
   }
 
   const onUpdate = (values: z.infer<typeof formSchema>) => {
@@ -138,7 +149,7 @@ export default function useProductForm(id?: number) {
       storageUnitId: Number(values.storageUnitId),
       categoryId: Number(values.categoryId),
     };
-    console.log(apiData)
+    return apiData
   }
 
   return {
@@ -146,7 +157,7 @@ export default function useProductForm(id?: number) {
     categories,
     storageUnits,
     isLoading,
-    onSubmit,
+    onCreate,
     onUpdate,
   }
 }
