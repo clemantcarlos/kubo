@@ -4,7 +4,6 @@ import { createBrowserRouter, RouterProvider } from "react-router";
 // PROTECTED ROUTES
 import ProtectedRoute from "@/components/auth/components/ProtectedRoute";
 // UI
-import { ThemeProvider } from "@/components/theme/ThemeProvider";
 import { ModeToggle } from "@/components/theme/ModeToggle";
 import { Toaster } from "sonner";
 // ROUTER COMPONENTS
@@ -20,11 +19,13 @@ import Table from "@/modules/restaurant/page/Table";
 import Products from "@/modules/Inventory/pages/Products";
 import Product from "./modules/Inventory/pages/Product";
 //CONTEXT
+import { ThemeProvider } from "@/components/theme/ThemeProvider";
 import { UserProvider } from "@/context/user";
+import { SpinnerProvider } from "./context/Spinner";
 // CSS
 import "@/index.css";
+import Spinner from "./components/global/loaders/Spinner";
 
-// TODO: CREATE PRODUCT DETAIL PAGE
 const router = createBrowserRouter([
   {
     path: "/",
@@ -112,9 +113,12 @@ createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
       <UserProvider>
-        <RouterProvider router={router} />
-        <Toaster theme="system"/>
-        <ModeToggle />
+        <SpinnerProvider>
+          <RouterProvider router={router} />
+          <Toaster theme="system"/>
+          <ModeToggle />
+          <Spinner />
+        </SpinnerProvider>
       </UserProvider>
     </ThemeProvider>
   </StrictMode>

@@ -7,6 +7,10 @@ import { z } from "zod"
 import { API_ENDPOINTS } from "@/lib/api/endpoints"
 import { Product } from "../types/product"
 import { getQuery } from "@/lib/api/queries"
+// COMPONENTS
+import { toast } from "sonner"
+import useSpinner from "@/hooks/useSpinner"
+
 const formSchema = z.object({
   name: z.string()
     .min(2, {
@@ -39,13 +43,11 @@ const formSchema = z.object({
       message: "La imagen es obligatoria",
     }),
 })
-
 const getCategories = async () => {
   const response = await fetch(API_ENDPOINTS.PRODUCT_CATEGORIES.BASE)
   const data = await response.json()
   return data
 }
-
 const getStorageUnits = async () => {
   const response = await fetch(API_ENDPOINTS.PRODUCT_STORAGE_UNITS.BASE)
   const data = await response.json()
@@ -53,10 +55,12 @@ const getStorageUnits = async () => {
 }
 
 export default function useProductForm(id?: number) {  
+  const { isLoading, showSpinner, hideSpinner } = useSpinner()
+  
   const [categories, setCategories] = useState([])
   const [storageUnits, setStorageUnits] = useState([])
-  const [isLoading, setIsLoading] = useState(false);
   const [product, setProduct] = useState<Product>()
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: product || {
@@ -67,9 +71,10 @@ export default function useProductForm(id?: number) {
       storageUnitId: "",
       categoryId: "",
     },
-  }) 
+  })
+
   useEffect(()=>{
-     const loadStaticData = async () => {
+    const loadStaticData = async () => {
       try {
         const [cats, units] = await Promise.all([
           getCategories(),
@@ -81,10 +86,9 @@ export default function useProductForm(id?: number) {
         console.error("Error loading static data:", error);
       }
     };
-
     const loadProductData = async (id:number, signal: AbortSignal) => {
       try {
-        setIsLoading(true);
+        showSpinner();
         const productById = await getQuery<Product>(
           API_ENDPOINTS.PRODUCTS.BY_ID(id),
           signal
@@ -95,7 +99,7 @@ export default function useProductForm(id?: number) {
           console.error(err);
         }
       } finally {
-        setIsLoading(false);
+        hideSpinner();
       }
     };
 
@@ -106,6 +110,7 @@ export default function useProductForm(id?: number) {
       loadProductData(id, controller.signal);
       return () => controller.abort();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   useEffect(() => {
@@ -119,6 +124,7 @@ export default function useProductForm(id?: number) {
   }, [product, id, form])
 
   async function onCreate(values: z.infer<typeof formSchema>) {
+    const controller = new AbortController();
     const { 
       name, 
       description, 
@@ -137,10 +143,39 @@ export default function useProductForm(id?: number) {
     formData.append("categoryId", String(categoryId));
     formData.append("image", image);
 
-    await fetch(API_ENDPOINTS.PRODUCTS.BASE, {
-      method: 'POST',
-      body: formData,
-    })
+    try {
+      showSpinner();
+      const res = await fetch(API_ENDPOINTS.PRODUCTS.BASE, {
+        method: 'POST',
+        body: formData,
+      });
+      if (!res.ok) {
+        throw new Error('Error en la respuesta del servidor');
+      }
+      toast.success('Producto creado exitosamente');
+      form.reset();
+    } catch (err) {
+      if (err instanceof Error) {
+        if (err.name !== 'AbortError'){
+          toast.error("No se pudo crear el producto", {
+            unstyled: true,
+            classNames: {
+              error: 'bg-red-500 flex gap-2 rounded-md p-4',
+            }
+          });
+        } 
+      } else {
+        toast.error("No se pudo crear el producto", {
+          unstyled: true,
+          classNames: {
+            error: 'bg-red-500 flex gap-2 rounded-md p-4',
+          }
+        });
+      }
+    } finally {
+      hideSpinner();
+      controller.abort();
+    }
   }
 
   const onUpdate = (values: z.infer<typeof formSchema>) => {
