@@ -44,14 +44,24 @@ const formSchema = z.object({
     }),
 })
 const getCategories = async () => {
-  const response = await fetch(API_ENDPOINTS.PRODUCT_CATEGORIES.BASE)
-  const data = await response.json()
-  return data
+  try {
+    const response = await fetch(API_ENDPOINTS.PRODUCT_CATEGORIES.BASE)
+    const data = await response.json()
+    return data
+  } catch (error) {
+    console.error("Error loading categories:", error);
+    return [];
+  }
 }
 const getStorageUnits = async () => {
-  const response = await fetch(API_ENDPOINTS.PRODUCT_STORAGE_UNITS.BASE)
-  const data = await response.json()
-  return data
+  try {
+    const response = await fetch(API_ENDPOINTS.PRODUCT_STORAGE_UNITS.BASE)
+    const data = await response.json()
+    return data
+  } catch (error) {
+    console.error("Error loading storage units:", error);
+    return [];
+  }
 }
 
 export default function useProductForm(id?: number) {  
@@ -88,7 +98,6 @@ export default function useProductForm(id?: number) {
     };
     const loadProductData = async (id:number, signal: AbortSignal) => {
       try {
-        showSpinner();
         const productById = await getQuery<Product>(
           API_ENDPOINTS.PRODUCTS.BY_ID(id),
           signal
@@ -98,8 +107,6 @@ export default function useProductForm(id?: number) {
         if (err instanceof Error && err.name !== "AbortError") {
           console.error(err);
         }
-      } finally {
-        hideSpinner();
       }
     };
 
@@ -110,7 +117,6 @@ export default function useProductForm(id?: number) {
       loadProductData(id, controller.signal);
       return () => controller.abort();
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   useEffect(() => {
