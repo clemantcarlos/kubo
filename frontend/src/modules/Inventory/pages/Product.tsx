@@ -1,26 +1,38 @@
 import { useEffect, useState } from "react";
-import { type Product  } from "../product/types/product";
+// UI
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/components/ui/drawer"
+import { Button } from "@/components/ui/button"
+// API
 import { getQuery } from "@/lib/api/queries";
-import { API_ENDPOINTS } from "@/lib/api/endpoints";
+import { API_BASE_URL, API_ENDPOINTS } from "@/lib/api/endpoints";
+// TYPES
+import { type Product  } from "../product/types/product";
+// HOOKS
+import useSpinner from "@/hooks/useSpinner";
 
-export default function Product() {
+export default function Product({id} : { id: number; }){
   const [data, setData] = useState<Product>();
-  const [isLoading, setIsLoading] = useState(false);
-
+  const { showSpinner, hideSpinner } = useSpinner()
+  
   useEffect(() => {
-      const id = window.location.pathname.split("/").pop();
       if (!id) return;
       const controller = new AbortController();
       const loadData = async () => {
         try {
-          setIsLoading(true);
-  
+          showSpinner();
           const res = await getQuery<Product>(
-            API_ENDPOINTS.PRODUCTS.BY_ID(Number(id)),
+            API_ENDPOINTS.PRODUCTS.BY_ID(id),
             controller.signal
           );
-  
-          console.log(res)
           setData(res.data);
         } catch (err) {
           if (err instanceof Error) {
@@ -29,28 +41,35 @@ export default function Product() {
             console.error("Error desconocido", err);
           }
         } finally {
-          setIsLoading(false);
+          hideSpinner();
         }
       };
   
       loadData();
       return () => controller.abort();
-    }, []);
+    }, [id, showSpinner, hideSpinner]
+  );
 
   return (
-    <div className="container mx-auto p-10">
-      <div className="flex flex-col gap-10">
-        <div className="flex flex-col gap-5">
-          <h1 className="text-3xl font-bold">Producto</h1>
-          <p className="text-xl">
-            {data?.name} - {data?.price}
-          </p>
+    <Drawer>
+      <DrawerTrigger>Detalles del producto</DrawerTrigger>
+      <DrawerContent>
+        <div className="mx-auto ">
+        <DrawerHeader className="flex-row">
+          <img src={API_BASE_URL + data?.imageUrl} alt="producto" className="h-24 w-24 rounded-full" />
+          <div className="flex-1 flex flex-col justify-center">
+            <DrawerTitle>Nombre: {data?.name}</DrawerTitle>
+            <DrawerDescription>Descripcion: {data?.description}</DrawerDescription>
+          </div>
+        </DrawerHeader>
+        <DrawerFooter className="flex-row">
+          <Button className="flex-1">Submit</Button>
+          <DrawerClose className="flex-1">
+            <Button className="w-full"  variant="outline">Cancel</Button>
+          </DrawerClose>
+        </DrawerFooter>
         </div>
-        <div className="flex flex-col gap-5">
-          <h1 className="text-3xl font-bold">Descripción</h1>
-          <p className="text-xl">{data?.description}</p>
-        </div>
-      </div>
-    </div>
+      </DrawerContent>
+    </Drawer>
   );
 }
