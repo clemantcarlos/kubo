@@ -139,7 +139,7 @@ export function ProductForm({ actionType, id }: ProductDialogProps) {
             className="w-24 h-24 object-cover rounded"
           />
         )} */}
-      <Button className="col-span-2" type="submit">Agregar</Button>
+      <Button className="col-span-2" type="submit">{actionType === "create" ? "Agregar" : "Editar"}</Button>
       </form>
     </Form>
   )
