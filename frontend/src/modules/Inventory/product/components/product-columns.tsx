@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge"
 // TYPES
 import { Product } from '../types/product'
 import ProductActionColumn from './product-action-column'
+import { API_BASE_URL } from '@/lib/api/endpoints'
 export const columns: ColumnDef<Product>[] = [
   {
     accessorKey: "id",
@@ -23,10 +24,15 @@ export const columns: ColumnDef<Product>[] = [
         </Button>
       )
     },
+    cell: ({ row }) => {
+      const imageUrl = row.original.imageUrl
+      return <img src={API_BASE_URL + imageUrl} alt="producto" className="size-18 rounded-full" />
+
+    },
   },
   {
     accessorKey: "name",
-    header: 'Nombre'
+    header: 'Nombre',
   },
   {
     accessorKey: "description",
