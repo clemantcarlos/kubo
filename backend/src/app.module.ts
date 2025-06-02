@@ -4,14 +4,14 @@ import { PrismaModule } from '@/prisma/prisma.module';
 // GUARDS
 import { AtGuard } from '@/modules/auth/common/guards/at.guard';
 //MODULES
+import { PermissionModule } from '@/modules/permission/permission.module';
 import { AuthModule } from '@/modules/auth/auth.module';
 import { UserModule } from '@/modules/user/user.module';
-import { ProductModule } from '@/modules/product/product.module';
-import { PermissionModule } from '@/modules/permission/permission.module';
 import { OrderModule } from '@/modules/order/order.module';
-import { ProductCategoryModule } from '@/modules/product-category/product-category.module';
 import { TableModule } from '@/modules/table/table.module';
-import { ProductStorageUnitModule } from './product-storage-unit/product-storage-unit.module';
+import { ProductModule } from '@/modules/product/product.module';
+import { ProductCategoryModule } from '@/modules/product-category/product-category.module';
+import { ProductStorageUnitModule } from '@/modules/product-storage-unit/product-storage-unit.module';
 @Module({
   imports: [
     PrismaModule,
