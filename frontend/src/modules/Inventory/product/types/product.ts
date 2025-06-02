@@ -5,6 +5,7 @@ export type Product = {
   stock: number;
   price: number;
   isAvailable: boolean;
+  imageUrl: string;
   storageUnit: {
     id?: number;
     name: string;
