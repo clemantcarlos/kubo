@@ -1,5 +1,8 @@
-import { Link } from 'react-router'
+// COMPONENTS
 import { ProductDialog } from './product-dialog'
+import Product from '../../pages/Product';
+import Alert from '@/components/global/messages/Alert';
+// UI
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -7,12 +10,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-
-import { Button } from '@/components/ui/button'
-import { MoreHorizontal } from 'lucide-react'
-import { API_ENDPOINTS } from '@/lib/api/endpoints'
 import { toast } from 'sonner'
-import Alert from '../../../../components/global/messages/Alert';
+import { Button } from '@/components/ui/button'
+// ICONS
+import { MoreHorizontal } from 'lucide-react'
+// API
+import { API_ENDPOINTS } from '@/lib/api/endpoints'
 
 export default function ProductActionColumn({id} : {id: number}) {
   const controller = new AbortController();
@@ -52,8 +55,8 @@ export default function ProductActionColumn({id} : {id: number}) {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <DropdownMenuItem>
-            <Link to={`${id}`}>Detalles del producto</Link>
+          <DropdownMenuItem disabled = {true} onSelect={(e) => e.preventDefault()}>
+            <Product id={Number(id)} />
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
