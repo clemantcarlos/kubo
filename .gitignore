@@ -2,3 +2,4 @@ node_modules/  # ← ¡No subas los bloques pesados!
 .env           # ← Tus secretos quedan en casa
 .DS_Store      # ← Solo para Mac
 dist/          # ← Lo que se construye solo
+TODO.txt
