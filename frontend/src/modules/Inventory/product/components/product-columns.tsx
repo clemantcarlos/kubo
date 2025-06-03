@@ -1,4 +1,3 @@
-import pluralize from '@/lib/pluralize'
 // TABLE
 import { ColumnDef } from "@tanstack/react-table"
 // ICONS
@@ -10,6 +9,7 @@ import { Badge } from "@/components/ui/badge"
 import { Product } from '../types/product'
 import ProductActionColumn from './product-action-column'
 import { API_BASE_URL } from '@/lib/api/endpoints'
+import { StockDrawer } from './stock-drawer'
 export const columns: ColumnDef<Product>[] = [
   {
     accessorKey: "id",
@@ -53,9 +53,9 @@ export const columns: ColumnDef<Product>[] = [
     cell: ({ row }) => {
       const stock = parseInt(row.getValue("stock"))
       const storageUnit = row.original.storageUnit
-      return <div className="text-right">{`
-        ${stock} ${stock > 1 ? pluralize(storageUnit.name) : storageUnit.name}
-      `}</div>
+      return <div className="text-right">
+        <StockDrawer storageUnit = {storageUnit} stock = {stock}/>
+      </div>
     },
   },
   {
