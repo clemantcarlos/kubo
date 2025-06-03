@@ -9,6 +9,7 @@ export type Product = {
   storageUnit: {
     id?: number;
     name: string;
+    unit: number;
   };
   category: {
     id?: number;
