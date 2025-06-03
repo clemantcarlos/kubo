@@ -138,7 +138,32 @@ export class ProductService {
       throw new BadRequestException(e);
     }
   }
-
+  async updateStock(id: number, stock: number): Promise<GetProductDto> {
+    const parsedId = Number(id);
+    try {
+      return await this.prisma.product.update({
+        where: {
+          id: parsedId,
+        },
+        data: {
+          stock: stock,
+        },
+        select: {
+          id: true,
+          name: true,
+          description: true,
+          stock: true,
+          price: true,
+          isAvailable: true,
+          imageUrl: true, 
+          category: { select: { id:true, name: true } },
+          storageUnit: { select: { id:true, name: true, unit: true } },
+        },
+      });
+    } catch (e) {
+      throw new BadRequestException(e);
+    }
+  }
   async deleteProduct(id: number): Promise<Product> {
     const parsedId = Number(id);
     try {

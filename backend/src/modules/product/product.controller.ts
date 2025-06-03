@@ -86,11 +86,23 @@ export class ProductController {
     @Body() product: Product,
   ): Promise<Product> {
     const productExist = await this.productService.getProduct(id);
-
     if (!productExist) {
       throw new NotFoundException('Product not found');
     }
     return this.productService.updateProduct(id, product);
+  }
+  @Public()
+  @Put(':id/stock')
+  @HttpCode(HttpStatus.OK)
+  async updateStock(
+    @Param('id') id: number,
+    @Body() stock: number,
+  ): Promise<GetProductDto> {
+    const productExist = await this.productService.getProduct(id);
+    if (!productExist) {
+      throw new NotFoundException('Product not found');
+    }
+    return this.productService.updateStock(id, stock);
   }
 
   @Public()
