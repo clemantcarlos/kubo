@@ -26,7 +26,7 @@ export class ProductService {
             isAvailable: true,
             imageUrl: true,
             category: { select: { name: true } },
-            storageUnit: { select: { name: true } },
+            storageUnit: { select: { name: true, unit: true } },
           },
           skip: (page - 1) * limit,
           take: limit,
@@ -70,7 +70,7 @@ export class ProductService {
           isAvailable: true,
           imageUrl: true, 
           category: { select: { id:true, name: true } },
-          storageUnit: { select: { id:true, name: true } },
+          storageUnit: { select: { id:true, name: true, unit: true } },
         },
       });
 

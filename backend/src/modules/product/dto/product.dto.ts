@@ -85,7 +85,7 @@ export class GetProductDto {
 
   @IsNotEmpty()
   @IsObject()
-  storageUnit: { id?:number, name: string };
+  storageUnit: { id?:number, name: string, unit: number};
 
   @IsString()
   @IsOptional()
