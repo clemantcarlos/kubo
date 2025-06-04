@@ -17,7 +17,6 @@ import Tables from "@/modules/restaurant/page/Tables";
 import Table from "@/modules/restaurant/page/Table";
 // INVENTORY
 import Products from "@/modules/Inventory/pages/Products";
-import Product from "./modules/Inventory/pages/Product";
 //CONTEXT
 import { ThemeProvider } from "@/components/theme/ThemeProvider";
 import { UserProvider } from "@/context/user";
@@ -90,15 +89,6 @@ const router = createBrowserRouter([
               crumb: "Productos",
             },
           },
-          {
-            path: ":id",
-            element: <Product />,
-            handle: {
-              crumbModule: "Inventario",
-              crumb: "Producto",
-              subCrumb: "Detalles",
-            },
-          }
         ]
       }
     ],
@@ -114,7 +104,9 @@ createRoot(document.getElementById("root")!).render(
     <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
       <UserProvider>
         <SpinnerProvider>
+
           <RouterProvider router={router} />
+          
           <Toaster theme="system"/>
           <ModeToggle />
           <Spinner />
