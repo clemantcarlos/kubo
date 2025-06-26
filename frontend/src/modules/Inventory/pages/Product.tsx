@@ -1,4 +1,7 @@
-import { useEffect, useState } from "react";
+import { 
+  // useEffect, 
+  useState
+} from "react";
 // UI
 import {
   Drawer,
@@ -12,43 +15,48 @@ import {
 } from "@/components/ui/drawer"
 import { Button } from "@/components/ui/button"
 // API
-import { getQuery } from "@/lib/api/queries";
-import { API_BASE_URL, API_ENDPOINTS } from "@/lib/api/endpoints";
+// import { getQuery } from "@/lib/api/queries";
+import { 
+  API_BASE_URL
+  // , API_ENDPOINTS 
+} from "@/lib/api/endpoints";
 // TYPES
 import { type Product  } from "../product/types/product";
 // HOOKS
-import useSpinner from "@/hooks/useSpinner";
+// import useSpinner from "@/hooks/useSpinner";
 
-export default function Product({id} : { id: number; }){
-  const [data, setData] = useState<Product>();
-  const { showSpinner, hideSpinner } = useSpinner()
+export default function Product(
+  // {id} : { id: number; }
+){
+  const [data] = useState<Product>();
+  // const { showSpinner, hideSpinner } = useSpinner()
   
-  useEffect(() => {
-      if (!id) return;
-      const controller = new AbortController();
-      const loadData = async () => {
-        try {
-          showSpinner();
-          const res = await getQuery<Product>(
-            API_ENDPOINTS.PRODUCTS.BY_ID(id),
-            controller.signal
-          );
-          setData(res.data);
-        } catch (err) {
-          if (err instanceof Error) {
-            if (err.name !== "AbortError") console.error(err);
-          } else {
-            console.error("Error desconocido", err);
-          }
-        } finally {
-          hideSpinner();
-        }
-      };
+  // useEffect(() => {
+  //     if (!id) return;
+  //     const controller = new AbortController();
+  //     const loadData = async () => {
+  //       try {
+  //         showSpinner();
+  //         const res = await getQuery<Product>(
+  //           API_ENDPOINTS.PRODUCTS.BY_ID(id),
+  //           controller.signal
+  //         );
+  //         setData(res.data);
+  //       } catch (err) {
+  //         if (err instanceof Error) {
+  //           if (err.name !== "AbortError") console.error(err);
+  //         } else {
+  //           console.error("Error desconocido", err);
+  //         }
+  //       } finally {
+  //         hideSpinner();
+  //       }
+  //     };
   
-      loadData();
-      return () => controller.abort();
-    }, [id, showSpinner, hideSpinner]
-  );
+  //     loadData();
+  //     return () => controller.abort();
+  //   }, [id, showSpinner, hideSpinner]
+  // );
 
   return (
     <Drawer>

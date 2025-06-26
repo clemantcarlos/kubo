@@ -54,8 +54,11 @@ export class ProductDto {
   @IsOptional()
   updatedAt?: string;
 
+  @IsString()
+  @IsOptional()
+  image?: string;
 }
-export class GetProductDto {
+export class ResponseProductDto {
   @IsNumber()
   @IsNotEmpty()
   id: number;
@@ -90,4 +93,9 @@ export class GetProductDto {
   @IsString()
   @IsOptional()
   imageUrl?: string;
+}
+export class updateStockDto {
+  @IsNumber()
+  @IsNotEmpty()
+  stock: number;
 }

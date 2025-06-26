@@ -9,13 +9,15 @@ import {
   Param,
   Post,
   Put,
+  Query,
+  Req,
   UploadedFile,
   UseInterceptors,
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
 // Product
-import { GetProductDto, ProductDto } from './dto/product.dto';
+import { ResponseProductDto, ProductDto, updateStockDto } from './dto/product.dto';
 import { ProductService } from './product.service';
 import { Product } from '@prisma/client';
 // Multer
@@ -24,10 +26,10 @@ import { FileInterceptor } from '@nestjs/platform-express';
 // Auth
 import { Public } from '../auth/common/decorators/public.decorator';
 // Interfaces
-import { GetResponse } from '@/interfaces/getResponse';
+import { GetResponse, ResponseDto } from '@/interfaces/getResponse';
 // Utils
 import { extname } from 'path';
-import { createHash, randomUUID } from 'crypto';
+import { createHash } from 'crypto';
 
 @Controller('product')
 export class ProductController {
@@ -36,14 +38,17 @@ export class ProductController {
   @Public()
   @Get()
   @HttpCode(HttpStatus.OK)
-  async getProducts(@Param('page') page: number = 1, @Param('limit') limit: number = 10): Promise<GetResponse<GetProductDto[]>> {
+  async getProducts(
+    @Query('page') page: number = 1, 
+    @Query('limit') limit: number = 10
+  ): Promise<GetResponse<ResponseProductDto[]>> {
     return this.productService.getProducts(page, limit);
   }
 
   @Public()
   @Get(':id')
   @HttpCode(HttpStatus.OK)
-  async getProduct(@Param('id') id: number): Promise<GetResponse<GetProductDto>> {
+  async getProduct(@Param('id') id: number): Promise<GetResponse<ResponseProductDto>> {
     return this.productService.getProduct(id);
   }
 
@@ -65,39 +70,79 @@ export class ProductController {
   async createProduct(
     @UploadedFile() file: Express.Multer.File,
     @Body() product: ProductDto
-  ) {
-    const buffer = file.buffer ?? await import('fs/promises').then(fs => fs.readFile(file.path));
-    const hash = createHash('sha256').update(buffer).digest('hex');
+  ): Promise<ResponseDto<ResponseProductDto>> {
 
-    const imageUrl = `/uploads/${file.filename}`;
+    if (file) {
+      const buffer = file.buffer ?? await import('fs/promises').then(fs => fs.readFile(file.path));
+      const hash = createHash('sha256').update(buffer).digest('hex');
+      const imageUrl = `/uploads/${file.filename}`;
+      
+      return this.productService.createProduct({
+        ...product,
+        imageUrl,
+        imageHash: hash,
+      });
+    }
+
+    const { image, ...productWithoutImage } = product
 
     return this.productService.createProduct({
-      ...product,
-      imageUrl,
-      imageHash: hash,
+      ...productWithoutImage,
+      imageUrl: null,
+      imageHash: null,
     });
   }
-
+ 
   @Public()
   @Put(':id')
   @HttpCode(HttpStatus.OK)
+  @UseInterceptors(
+    FileInterceptor('image', {
+      storage: diskStorage({
+        destination: './uploads', // guarda localmente por ahora
+        filename: (req, file, cb) => {
+          const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+          cb(null, `${file.fieldname}-${uniqueSuffix}${extname(file.originalname)}`);
+        },
+      }),
+    }),
+  )
   async updateProduct(
     @Param('id') id: number,
-    @Body() product: Product,
-  ): Promise<Product> {
+    @Body() product: ProductDto,
+    @UploadedFile() file: Express.Multer.File,
+  ): Promise<ResponseDto<ResponseProductDto>> {
     const productExist = await this.productService.getProduct(id);
     if (!productExist) {
       throw new NotFoundException('Product not found');
     }
-    return this.productService.updateProduct(id, product);
+    if (file) {
+      const buffer = file.buffer ?? await import('fs/promises').then(fs => fs.readFile(file.path));
+      const hash = createHash('sha256').update(buffer).digest('hex');
+      const imageUrl = `/uploads/${file.filename}`;
+      
+      return this.productService.updateProduct(id, {
+        ...product,
+        imageUrl,
+        imageHash: hash,
+      });
+    }
+    const { image, ...productWithoutImage } = product
+
+    return this.productService.updateProduct(id, {
+      ...productWithoutImage,
+      imageUrl: null,
+      imageHash: null,
+    });
   }
   @Public()
   @Put(':id/stock')
   @HttpCode(HttpStatus.OK)
   async updateStock(
     @Param('id') id: number,
-    @Body() stock: number,
-  ): Promise<GetProductDto> {
+    @Body() stock: updateStockDto,
+  ): Promise<ResponseDto<ResponseProductDto>>
+  {
     const productExist = await this.productService.getProduct(id);
     if (!productExist) {
       throw new NotFoundException('Product not found');
@@ -110,7 +155,6 @@ export class ProductController {
   @HttpCode(HttpStatus.OK)
   async deleteProduct(@Param('id') id: number): Promise<Product> {
     const productExist = await this.productService.getProduct(id);
-
     if (!productExist) {
       throw new NotFoundException('Product not found');
     }

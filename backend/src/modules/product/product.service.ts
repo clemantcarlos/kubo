@@ -3,34 +3,27 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { Prisma, Product } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 // DTO
-import { GetProductDto, ProductDto } from './dto/product.dto';
+import { ResponseProductDto, ProductDto, updateStockDto } from './dto/product.dto';
 // INTERFACES
-import { GetResponse } from '@/interfaces/getResponse';
+import { GetResponse, ResponseDto } from '@/interfaces/getResponse';
 // Utils
 import { promises as fs } from 'fs';
+import { productSelect } from './utils/const.prisma.query';
 
 @Injectable()
 export class ProductService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async getProducts(page: number = 1, limit: number = 10): Promise<GetResponse<GetProductDto[]>> {
+  async getProducts(page: number = 1, limit: number = 10): Promise<GetResponse<ResponseProductDto[]>> {
+    const formatedPage = Number(page);
+    const formatedLimit = Number(limit);
     try {
       const [products, total] = await this.prisma.$transaction([
         this.prisma.product.findMany({
-          select: {
-            id: true,
-            name: true,
-            description: true,
-            stock: true,
-            price: true,
-            isAvailable: true,
-            imageUrl: true,
-            category: { select: { name: true } },
-            storageUnit: { select: { name: true, unit: true } },
-          },
-          skip: (page - 1) * limit,
-          take: limit,
-          orderBy: { id: 'asc' },
+          select: productSelect,
+          skip: (formatedPage - 1) * formatedLimit,
+          take: formatedLimit,
+          orderBy: { id: 'desc' },
         }),
         this.prisma.product.count(),
       ]);
@@ -54,24 +47,14 @@ export class ProductService {
     }
   }
 
-  async getProduct(id: number): Promise<GetResponse<GetProductDto>> {
+  async getProduct(id: number): Promise<GetResponse<ResponseProductDto>> {
     const parsedId = Number(id);
     try {
        const product = await this.prisma.product.findUnique({
         where: {
           id: parsedId,
         },
-        select: {
-          id: true,
-          name: true,
-          description: true,
-          stock: true,
-          price: true,
-          isAvailable: true,
-          imageUrl: true, 
-          category: { select: { id:true, name: true } },
-          storageUnit: { select: { id:true, name: true, unit: true } },
-        },
+        select: productSelect
       });
 
       return {
@@ -88,15 +71,19 @@ export class ProductService {
     }
   }
 
-  async createProduct(product: ProductDto & { imageUrl?: string } & { imageHash?: string }) {
+  async createProduct(
+    product: ProductDto & { imageUrl?: string } & { imageHash?: string }
+  ): Promise<ResponseDto<ResponseProductDto>> {
     try {
+      if (product.imageHash) {
       const existing = await this.prisma.product.findUnique({
         where: { imageHash: product.imageHash },
       });
 
       if (existing) {
-        await fs.unlink('.' + product.imageUrl); // ❌ elimina la imagen
-        throw new BadRequestException('Esta imagen ya fue subida.');
+          await fs.unlink('.' + product.imageUrl); // ❌ elimina la imagen
+          throw new BadRequestException('Esta imagen ya fue subida.');
+        }
       }
       const newProduct = await this.prisma.product.create({
          data: {
@@ -106,8 +93,12 @@ export class ProductService {
           categoryId: Number(product.categoryId),
           storageUnitId: Number(product.storageUnitId),
         },
+        select: productSelect,
       });
-      return newProduct;
+      return {
+        success: true,
+        data: newProduct,
+      };
     } catch (e) {
       if (e instanceof Prisma.PrismaClientKnownRequestError) {
         if (e.code === 'P2002') {
@@ -125,41 +116,83 @@ export class ProductService {
     }
   }
 
-  async updateProduct(id: number, product: Product): Promise<Product> {
+  async updateProduct(
+    id: number,
+    product: ProductDto & { imageUrl?: string } & { imageHash?: string }
+  ): Promise<ResponseDto<ResponseProductDto>> {
     const parsedId = Number(id);
     try {
-      return await this.prisma.product.update({
-        where: {
-          id: parsedId,
-        },
-        data: product,
+      if (product.imageHash) {
+      const existing = await this.prisma.product.findUnique({
+        where: { imageHash: product.imageHash },
       });
-    } catch (e) {
-      throw new BadRequestException(e);
-    }
-  }
-  async updateStock(id: number, stock: number): Promise<GetProductDto> {
-    const parsedId = Number(id);
-    try {
-      return await this.prisma.product.update({
+
+      if (existing) {
+          await fs.unlink('.' + product.imageUrl); // ❌ elimina la imagen
+          throw new BadRequestException('Esta imagen ya fue subida.');
+        }
+      }
+      const updatedProduct = await this.prisma.product.update({
         where: {
           id: parsedId,
         },
         data: {
-          stock: stock,
+          ...product,
+          price: Number(product.price),
+          stock: Number(product.stock),
+          categoryId: Number(product.categoryId),
+          storageUnitId: Number(product.storageUnitId),
         },
-        select: {
-          id: true,
-          name: true,
-          description: true,
-          stock: true,
-          price: true,
-          isAvailable: true,
-          imageUrl: true, 
-          category: { select: { id:true, name: true } },
-          storageUnit: { select: { id:true, name: true, unit: true } },
-        },
+        select: productSelect,
+      })
+      return {
+        success: true,
+        data: updatedProduct,
+      };
+    } catch (e) {
+      if (e instanceof Prisma.PrismaClientKnownRequestError) {
+        if (e.code === 'P2002') {
+          throw new BadRequestException('Product already exists');
+        }
+        if (e.code === 'P2003') {
+          throw new BadRequestException(
+            'One relationship with product is missing ' + e.meta.field_name,
+          );
+        }
+        throw new BadRequestException(e);
+      }
+      throw new BadRequestException(e);
+    }
+  }
+
+  async updateStock(
+    id: number, 
+    { stock }: updateStockDto
+  ): Promise<ResponseDto<ResponseProductDto>> 
+  {
+    const parsedId = Number(id);
+    try{
+      const transaction = await this.prisma.$transaction(async (tx) => {
+        const product = await tx.product.findUnique({where: {id: parsedId}});
+
+        if (!product) {
+          throw new NotFoundException('Product not found');
+        }
+
+        return await tx.product.update({
+          where: {
+            id: parsedId,
+          },
+          data: {
+            stock: {set: stock},
+          },
+          select: productSelect,
+        });
       });
+      return {
+        success: true,
+        data: transaction,
+      }
     } catch (e) {
       throw new BadRequestException(e);
     }

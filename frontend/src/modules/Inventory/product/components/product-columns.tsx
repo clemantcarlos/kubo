@@ -26,8 +26,8 @@ export const columns: ColumnDef<Product>[] = [
     },
     cell: ({ row }) => {
       const imageUrl = row.original.imageUrl
-      return <img src={API_BASE_URL + imageUrl} alt="producto" className="size-18 rounded-full" />
-
+      if(imageUrl) return <img src={API_BASE_URL + imageUrl} alt="producto" className="size-18 rounded-full" />
+      return <div className="size-18 rounded-md bg-white opacity-70 animate-pulse" />
     },
   },
   {
@@ -52,9 +52,10 @@ export const columns: ColumnDef<Product>[] = [
     header: () => <div className="text-right">Stock</div>,
     cell: ({ row }) => {
       const stock = parseInt(row.getValue("stock"))
+      const id = row.original.id
       const storageUnit = row.original.storageUnit
       return <div className="text-right">
-        <StockDrawer storageUnit = {storageUnit} stock = {stock}/>
+        <StockDrawer id = {id} storageUnit = {storageUnit} stock = {stock}/>
       </div>
     },
   },

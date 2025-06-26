@@ -23,14 +23,12 @@ export function DataTable<TData, TValue>({
   totalPages,
   data,
   columns,
-  isLoading,
-  onPageChange,
+  setPage,
 }: DataTableProps<TData, TValue>) {
   const { table, handleInputChange } = useProductDataTable<TData, TValue>({
     columns,
     data,
   });
-
   return (
     <div>
       <div className="flex items-center justify-between py-4 gap-4">
@@ -41,7 +39,6 @@ export function DataTable<TData, TValue>({
         />
         <ProductDialog actionType="create" />
       </div>
-
       <div className="rounded-md border">
         <Table>
           <TableHeader>
@@ -61,16 +58,7 @@ export function DataTable<TData, TValue>({
             ))}
           </TableHeader>
           <TableBody>
-            {isLoading ? (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="text-center py-6"
-                >
-                  Cargando...
-                </TableCell>
-              </TableRow>
-            ) : table.getRowModel().rows?.length ? (
+            {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
                 <TableRow key={row.id}>
                   {row.getVisibleCells().map((cell) => (
@@ -96,12 +84,11 @@ export function DataTable<TData, TValue>({
           </TableBody>
         </Table>
       </div>
-
       <div className="flex items-center justify-end space-x-2 py-4">
         <Button
           variant="outline"
           size="sm"
-          onClick={() => onPageChange(page - 1)}
+          onClick={() => setPage(page - 1)}
           disabled={page === 1}
         >
           Previous
@@ -112,7 +99,7 @@ export function DataTable<TData, TValue>({
         <Button
           variant="outline"
           size="sm"
-          onClick={() => onPageChange(page + 1)}
+          onClick={() => setPage(page + 1)}
           disabled={page === totalPages}
         >
           Next

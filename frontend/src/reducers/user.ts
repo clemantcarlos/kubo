@@ -1,11 +1,12 @@
-  export const initialState: null = null
+export const initialState: null = null
 
 export const USER_ACTIONS = {
   LOGIN: 'LOGIN',
   LOGOUT: 'LOGOUT',
   SIGNUP: 'SIGNUP'
 }
-
+// TODO: CAMBIAR TIPOS
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function userReducer(state: any, action: any) {
   const {payload: actionPayload, type: actionType} = action 
   switch (actionType) {
@@ -14,8 +15,6 @@ export function userReducer(state: any, action: any) {
       localStorage.setItem('user-token', JSON.stringify(newState.tokens))
       return newState
     }
-    default:
-      return state
   }
   return state
 }

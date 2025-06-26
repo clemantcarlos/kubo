@@ -1,4 +1,3 @@
-import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router";
 // PROTECTED ROUTES
@@ -24,6 +23,7 @@ import { SpinnerProvider } from "./context/Spinner";
 // CSS
 import "@/index.css";
 import Spinner from "./components/global/loaders/Spinner";
+import { GlobalProvider } from "./context/Global";
 
 const router = createBrowserRouter([
   {
@@ -100,18 +100,16 @@ const router = createBrowserRouter([
 ]);
 
 createRoot(document.getElementById("root")!).render(
-  <StrictMode>
-    <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
-      <UserProvider>
-        <SpinnerProvider>
-
+  <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
+    <UserProvider>
+      <SpinnerProvider>
+        <GlobalProvider>
           <RouterProvider router={router} />
-          
-          <Toaster theme="system"/>
-          <ModeToggle />
-          <Spinner />
-        </SpinnerProvider>
-      </UserProvider>
-    </ThemeProvider>
-  </StrictMode>
+        </GlobalProvider>
+        <Toaster theme="system"/>
+        <ModeToggle />
+        <Spinner />
+      </SpinnerProvider>
+    </UserProvider>
+  </ThemeProvider>
 );

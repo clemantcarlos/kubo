@@ -1,4 +1,4 @@
-export type Response<T> = {
+export type GetResponse<T> = {
   success: boolean;
   data: T;
   meta?: {
@@ -7,33 +7,93 @@ export type Response<T> = {
     totalPages: number;
   };
 };
+export type Response<T> = {
+  success: boolean;
+  data: T;
+};
 
-export async function getQuery<T>(url: string, signal?: AbortSignal): Promise<Response<T>> {
+export async function getQuery<T>(
+  url: string, 
+  signal?: AbortSignal
+): Promise<GetResponse<T>> {
   const response = await fetch(url, { signal });
-
-  if (!response.ok) {
-    throw new Error(`Error HTTP: ${response.status}`);
-  }
 
   const json = await response.json();
 
   if (!json.success) {
     throw new Error('Error en la respuesta del servidor');
   }
+
+  return json as GetResponse<T>;
+}
+export async function postQueryJson<T,Body>(
+  url: string, 
+  body: Body, 
+  signal?: AbortSignal
+): Promise<Response<T>> {  
+  const response = await fetch(url, { signal, method: 'POST', body: JSON.stringify(body) });
+
+  const json = await response.json();
 
   return json as Response<T>;
 }
-export async function deleteQuery<T>(url: string, signal?: AbortSignal): Promise<Response<T>> {
-  const response = await fetch(url, { signal, method: 'DELETE' });
-
-  if (!response.ok) {
-    throw new Error(`Error HTTP: ${response.status}`);
-  }
-
+export async function postQueryFormData<T>(
+  url: string, 
+  body: FormData, 
+  signal?: AbortSignal
+): Promise<GetResponse<T>> {  
+  const response = await fetch(
+    url, 
+    { 
+      signal, 
+      method: 'POST', 
+      body: body
+    }
+  );
   const json = await response.json();
+  return json as GetResponse<T>;
+}
+export async function putQueryFormData<T>(
+  url: string, 
+  body: FormData, 
+  signal?: AbortSignal
+): Promise<GetResponse<T>> {  
+  const response = await fetch(
+    url, 
+    { 
+      signal, 
+      method: 'PUT', 
+      body: body
+    }
+  );
+  const json = await response.json();
+  return json as GetResponse<T>;
+}
+export async function putQueryJson<T, Body>(
+  url: string, 
+  body: Body,
+  signal?: AbortSignal
+): Promise<GetResponse<T>> {  
 
-  if (!json.success) {
-    throw new Error('Error en la respuesta del servidor');
-  }
+  const response = await fetch(
+    url, 
+    { 
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      signal, 
+      method: 'PUT', 
+      body: JSON.stringify(body)
+    }
+  );
+  const json = await response.json();
+  return json as GetResponse<T>;
+}
+export async function deleteQuery<T>(
+  url: string, 
+  signal?: AbortSignal
+): Promise<Response<T>> {
+  const response = await fetch(url, { signal, method: 'DELETE' });
+  const json = await response.json();
   return json as Response<T>;
 }

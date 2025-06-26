@@ -1,6 +1,6 @@
 // COMPONENTS
 import { ProductDialog } from './product-dialog'
-import Product from '../../pages/Product';
+// import Product from '../../pages/Product';
 import Alert from '@/components/global/messages/Alert';
 // UI
 import {
@@ -10,40 +10,16 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 // ICONS
 import { MoreHorizontal } from 'lucide-react'
-// API
-import { API_ENDPOINTS } from '@/lib/api/endpoints'
+import useGlobal from '@/hooks/useGlobal';
 
 export default function ProductActionColumn({id} : {id: number}) {
-  const controller = new AbortController();
-
-  const deleteProduct = async () => {
-    try {
-      const res = await fetch(API_ENDPOINTS.PRODUCTS.BY_ID(id), {
-        method: 'DELETE',
-        signal: controller.signal,
-      });
-      if (!res.ok) {
-        throw new Error('Error en la respuesta del servidor');
-      }
-      toast.success('Producto eliminado exitosamente');
-    } catch (err) {
-      if (err instanceof Error) {
-        if (err.name !== 'AbortError') toast.error('No se pudo eliminar el producto');
-      } else {
-        toast.error("No se pudo eliminar el producto", {
-        unstyled: true,
-        classNames: {
-          error: 'bg-red-500 flex gap-2 rounded-md p-4',
-        }
-      });
-      }
-    } finally {
-      controller.abort();
-    }
+  const { deleteProduct } = useGlobal()
+  
+  const deleteConfirmHandler = async () => {
+    await deleteProduct(id)
   };
   return (
     <div className="text-right">
@@ -55,9 +31,9 @@ export default function ProductActionColumn({id} : {id: number}) {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <DropdownMenuItem disabled = {true} onSelect={(e) => e.preventDefault()}>
+          {/* <DropdownMenuItem disabled = {true} onSelect={(e) => e.preventDefault()}>
             <Product id={Number(id)} />
-          </DropdownMenuItem>
+          </DropdownMenuItem> */}
           <DropdownMenuSeparator />
           <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
             <ProductDialog actionType="update" id={Number(id)} />
@@ -67,7 +43,7 @@ export default function ProductActionColumn({id} : {id: number}) {
               trigger='Eliminar producto'
               title='¿Estás seguro de eliminar este producto?'
               description='Esta acción no se puede deshacer!'
-              onConfirm={deleteProduct}
+              onConfirm={deleteConfirmHandler}
             />
           </DropdownMenuItem>
         </DropdownMenuContent>

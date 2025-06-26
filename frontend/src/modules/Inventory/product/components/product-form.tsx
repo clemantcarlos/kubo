@@ -30,11 +30,23 @@ import { StorageUnit } from "../interfaces/storageUnit"
 import { ProductDialogProps } from "../interfaces/producDialogProps"
 
 export function ProductForm({ actionType, id }: ProductDialogProps) {  
-  const { form, onCreate, onUpdate, categories, storageUnits } = useProductForm(id)
+  const { 
+    form, 
+    formValues, 
+    categories, 
+    storageUnits, 
+    onCreate, 
+    onUpdate, 
+  } = useProductForm(id)
+
   return (
     <Form {...form}>
-      <form id = 'product-form' 
-        onSubmit = {  actionType === "create" ? form.handleSubmit(onCreate) : form.handleSubmit(onUpdate)} 
+      <form id = 'product-form'
+        onSubmit = {  
+          actionType === "update" && id
+          ? form.handleSubmit(onUpdate) 
+          : form.handleSubmit(onCreate)
+        } 
         className="grid grid-cols-2 auto-rows-min gap-x-4 gap-y-10">
         <FormField
           control={form.control}
@@ -43,22 +55,37 @@ export function ProductForm({ actionType, id }: ProductDialogProps) {
             <FormItem>
               <FormLabel>Nombre</FormLabel>
               <FormControl>
-                <Input placeholder="Ej: Harina pan" {...field} />
+                <Input 
+                  className = {
+                    form.getValues("name") !== formValues.name && id ?
+                    "border-amber-500 focus-visible:ring-amber-500"
+                    : ""
+                  } 
+                  placeholder="Ej: Harina pan" {...field} 
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
           <FormField
+          
           control={form.control}
           name="categoryId"
           render={({ field }) => (
             <FormItem className="flex flex-wrap gap-2">
               <FormLabel className="w-full">Categoría</FormLabel>
-              <Select onValueChange={field.onChange} value={field.value}>
+              <Select  onValueChange={field.onChange} value={field.value}>
                 <FormControl>
                   <SelectTrigger className="flex-1">
-                    <SelectValue placeholder="Selecciona una categoría" />
+                    <SelectValue
+                      className = {
+                        form.getValues("categoryId") !== formValues.categoryId && id ?
+                        "border-amber-500 focus-visible:ring-amber-500"
+                        : ""
+                      }
+                      placeholder="Selecciona una categoría"
+                    />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
@@ -67,7 +94,7 @@ export function ProductForm({ actionType, id }: ProductDialogProps) {
                   ))}
                 </SelectContent>
               </Select>
-              <Button variant = 'outline' className="col-auto" onClick={(e)=>e.preventDefault()}>
+              <Button  variant = 'outline' className="col-auto" onClick={(e)=>e.preventDefault()}>
                 <PlusIcon />
               </Button>
               <FormMessage  className="col-span-2"/>
@@ -75,15 +102,23 @@ export function ProductForm({ actionType, id }: ProductDialogProps) {
           )}
         />
        <FormField
+        
         control={form.control}
         name="storageUnitId"
         render={({ field }) => (
           <FormItem className="flex flex-wrap gap-2f">
             <FormLabel className="w-full">Unidad de almacenamiento</FormLabel>
-            <Select onValueChange={field.onChange} value={field.value}>
+            <Select  onValueChange={field.onChange} value={field.value}>
               <FormControl>
                 <SelectTrigger className="flex-1">
-                  <SelectValue placeholder="Selecciona una unidad" />
+                  <SelectValue 
+                    className = {
+                      form.getValues("storageUnitId") !== formValues.storageUnitId && id ?
+                      "border-amber-500 focus-visible:ring-amber-500"
+                      : ""
+                    }
+                    placeholder="Selecciona una unidad" 
+                  />
                 </SelectTrigger>
               </FormControl>
               <SelectContent>
@@ -92,15 +127,23 @@ export function ProductForm({ actionType, id }: ProductDialogProps) {
                 ))}
               </SelectContent>
             </Select>
-            <Button variant = 'outline' className="col-auto" onClick={(e)=>e.preventDefault()}>
+            <Button  variant = 'outline' className="col-auto" onClick={(e)=>e.preventDefault()}>
                 <PlusIcon />
               </Button>
             <FormMessage />
           </FormItem>
         )}
       />
-        <QuantityInputFormField name="stock" control={form.control} />
-        <PriceInputFormField name="price" control={form.control} />
+        <QuantityInputFormField
+          formValues={formValues}
+          name="stock" 
+          control={form.control} 
+        />
+        <PriceInputFormField  
+          formValues = {formValues}
+          name="price" 
+          control={form.control}
+        />
         <FormField
           control={form.control}
           name="image"
@@ -108,7 +151,7 @@ export function ProductForm({ actionType, id }: ProductDialogProps) {
             <FormItem>
               <FormLabel>Imagen</FormLabel>
               <FormControl>
-                <Input type="file"  accept="image/*" onChange={(e) => {
+                <Input  type="file"  accept="image/*" onChange={(e) => {
                   const file = e.target.files?.[0];
                   if (file) {
                     field.onChange(file)
@@ -126,7 +169,15 @@ export function ProductForm({ actionType, id }: ProductDialogProps) {
             <FormItem className="col-span-2">
               <FormLabel>Descripción</FormLabel>
               <FormControl>
-                <Textarea className="rezize-none" placeholder="Ej: Harina de maiz precocida" {...field} />
+                <Textarea 
+                  className = {
+                    form.getValues("description") !== formValues.description && id ?
+                    "resize-none border-amber-500 focus-visible:ring-amber-500"
+                    : "resize-none"
+                  }
+                  placeholder="Ej: Harina de maiz precocida" 
+                  {...field} 
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -139,7 +190,12 @@ export function ProductForm({ actionType, id }: ProductDialogProps) {
             className="w-24 h-24 object-cover rounded"
           />
         )} */}
-      <Button className="col-span-2" type="submit">{actionType === "create" ? "Agregar" : "Editar"}</Button>
+      <Button 
+        className="col-span-2" 
+        type="submit"
+        >
+        {actionType === "create" ? "Agregar" : "Editar"}
+        </Button>
       </form>
     </Form>
   )

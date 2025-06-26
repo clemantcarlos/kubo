@@ -7,3 +7,7 @@ export interface GetResponse<T> {
     totalPages: number;
   };
 }
+export interface ResponseDto<T> {
+  success: boolean;
+  data: T;
+}

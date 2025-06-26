@@ -8,6 +8,7 @@ export const API_ENDPOINTS = {
     BASE: `${API_BASE_URL}/product`,
     BASE_GET: (page: number, limit: number) => `${API_BASE_URL}/product?page=${page}&limit=${limit}`,
     BY_ID: (id: number) => `${API_BASE_URL}/product/${id}`,
+    UPDATE_STOCK: (id: number) => `${API_BASE_URL}/product/${id}/stock`,
   },
   
   // Categorías

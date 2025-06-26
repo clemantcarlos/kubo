@@ -39,7 +39,7 @@ export function ProductDialog({ actionType, id }: ProductDialogProps) {
           </DialogDescription>
         </DialogHeader>
         <div>
-          <ProductForm actionType="create" id={id}/>
+          <ProductForm actionType={actionType} id={id}/>
         </div>
       </DialogContent>
     </Dialog>
