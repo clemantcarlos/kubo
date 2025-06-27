@@ -132,7 +132,7 @@ export function DashboardSidebar({
     ,
   }));
   return (
-    <Sidebar {...props}>
+    <Sidebar {...props} className="z-[9999]">
       <SidebarHeader>
         <VersionSwitcher
           versions={data.versions}
