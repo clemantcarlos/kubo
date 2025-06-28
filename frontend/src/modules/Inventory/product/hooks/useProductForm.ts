@@ -5,7 +5,6 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { formSchema, type ProductFormSchema } from "../schema/product"
 // ENDPOINTS
 import { API_ENDPOINTS } from "@/lib/api/endpoints"
-import { Product} from "../types/product"
 // COMPONENTS
 import useGlobal from "@/hooks/useGlobal"
 
@@ -26,8 +25,6 @@ export default function useProductForm(id?: number) {
   // STATES
   const [categories, setCategories] = useState([])
   const [storageUnits, setStorageUnits] = useState([])
-  const [product, setProduct] = useState<Product | undefined>()
-
   const [formValues, setFormValues] = useState<ProductFormSchema>({
     name: "",
     description: "",
@@ -40,7 +37,7 @@ export default function useProductForm(id?: number) {
   // FORM
   const form = useForm<ProductFormSchema>({
     resolver: zodResolver(formSchema),
-    defaultValues: product || {
+    defaultValues: {
       name: "",
       description: "",
       stock: 1,
@@ -49,8 +46,9 @@ export default function useProductForm(id?: number) {
       categoryId: "",
     },
   })
-  const loadProductData  = useCallback(async (productId?:number) => {
-    try {
+  
+  const loadStaticData  = useCallback(async () => {
+    try { 
       const promises = await Promise.allSettled([
         getCategories(),
         getStorageUnits(),
@@ -58,29 +56,28 @@ export default function useProductForm(id?: number) {
       const [cats, units] = promises.map(
         (promise) => promise.status === "fulfilled" ? promise.value : []
       )
-
       setCategories(cats)
       setStorageUnits(units)
+    } catch (error) {
+      console.error("Error loading product data:", error);
+    }
+  }, [])
 
-      if (productId) {
-        const findProduct = await getProduct(productId)
-
-        if (!findProduct) return
-
-        setProduct(findProduct.data)
-        
-        form.reset({
-          ...findProduct.data,
-          storageUnitId: String(findProduct.data?.storageUnit.id),
-          categoryId: String(findProduct.data?.category.id),
-        })
-
-        setFormValues({
-          ...findProduct?.data,
-          storageUnitId: String(findProduct?.data?.storageUnit.id),
-          categoryId: String(findProduct?.data?.category.id),
-        })
-      }
+  const loadProductData  = useCallback(async (productId:number) => {
+    try {
+      const product = await getProduct(productId)
+      if (!product) return
+      const { data } = product;
+      setFormValues({
+        ...data,
+        storageUnitId: String(data?.storageUnit.id),
+        categoryId: String(data?.category.id),
+      })
+      form.reset({
+        ...data,
+        storageUnitId: String(data?.storageUnit.id),
+        categoryId: String(data?.category.id),
+      })
     } catch (error) {
       console.error("Error loading product data:", error);
     } 
@@ -88,8 +85,15 @@ export default function useProductForm(id?: number) {
 
   // EFFECTS
   useEffect(()=>{
-    loadProductData(id)
-  }, [id, loadProductData]);
+    loadStaticData()
+  }, [loadStaticData]);
+
+  useEffect(()=>{
+    if(id && categories.length > 0 && storageUnits.length > 0) {
+      loadProductData(id)
+    }
+  }, [id, categories, storageUnits, loadProductData]);
+
   // HANDLERS
   async function onCreate() {
     const apiData = {
