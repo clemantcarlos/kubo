@@ -15,6 +15,7 @@ import { CreateUserDto } from 'src/modules/user/dto/user.dto';
 import { Prisma } from '@prisma/client';
 import { Tokens } from './types/tokens.type';
 import { UserWithTokens } from './types/userWithTokens';
+import { ResponseDto } from '@/interfaces/getResponse';
 @Injectable()
 export class AuthService {
   constructor(
@@ -22,7 +23,7 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async signupLocal(user: CreateUserDto): Promise<UserWithTokens> {
+  async signupLocal(user: CreateUserDto): Promise<ResponseDto<UserWithTokens>> {
     const { password, ...userWithoutPassword } = user;
 
     const saltOrRounds = 10;
@@ -46,15 +47,17 @@ export class AuthService {
     const tokens = await this.getTokens(newUser.id, newUser.email);
     await this.updateRtHash(newUser.id, tokens.refresh_token);
 
-    return { tokens, user: newUser };
+    return { success: true , data: { tokens, user: newUser } };
   }
 
-  async signinLocal(dto: AuthDto): Promise<UserWithTokens> {
+  async signinLocal(dto: AuthDto): Promise<ResponseDto<UserWithTokens>> {
     const user = await this.prisma.user.findUnique({
       where: {
         email: dto.email,
       },
     });
+    
+    if (!user) throw new UnauthorizedException('User or password incorrect');
 
     const {
       id,
@@ -68,8 +71,6 @@ export class AuthService {
       ...userPrivateInfo
     } = user;
 
-    if (!user) throw new UnauthorizedException('User or password incorrect');
-
     const passwordMatches = await bcrypt.compare(
       dto.password,
       userPrivateInfo.password,
@@ -82,8 +83,11 @@ export class AuthService {
 
     await this.updateRtHash(id, tokens.refresh_token);
 
+
     return {
-      tokens,
+      success: true,
+      data: {
+        tokens,
       user: {
         id,
         name,
@@ -94,7 +98,8 @@ export class AuthService {
         identityDocumentTypeId,
         identityDocument,
       },
-    };
+      }
+    }
   }
   async logout(userId: string) {
     const unloggedUser = await this.prisma.user.updateMany({
@@ -112,7 +117,7 @@ export class AuthService {
       throw new NotFoundException('User not logged');
     return { message: 'User logged out' };
   }
-  async refreshTokens(userId: string, rt: string): Promise<Tokens> {
+  async refreshTokens(userId: string, rt: string): Promise<ResponseDto<Tokens>> {
     const user = await this.prisma.user.findUnique({
       where: {
         id: userId,
@@ -129,7 +134,7 @@ export class AuthService {
 
     await this.updateRtHash(user.id, tokens.refresh_token);
 
-    return tokens;
+    return {success: true, data: tokens};
   }
 
   // UTILS FUNCTIONS

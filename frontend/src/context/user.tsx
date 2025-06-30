@@ -5,7 +5,6 @@ import { USER_ACTIONS, userReducer, initialState } from "@/reducers/user";
 // eslint-disable-next-line react-refresh/only-export-components, @typescript-eslint/no-explicit-any
 export const UserContext = createContext<any>(null)
 
-
 function useUserReducer (){
   const [state, dispatch] = useReducer(userReducer, initialState)
   // TODO: CAMBIAR TIPOS

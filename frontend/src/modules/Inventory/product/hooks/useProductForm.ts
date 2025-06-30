@@ -1,30 +1,30 @@
-import { useCallback, useEffect, useState } from "react"
-import { useForm } from "react-hook-form"
+import { useCallback, useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
 // ZOD
-import { zodResolver } from "@hookform/resolvers/zod"
-import { formSchema, type ProductFormSchema } from "../schema/product"
+import { zodResolver } from "@hookform/resolvers/zod";
+import { formSchema, type ProductFormSchema } from "../schema/product.schema";
 // ENDPOINTS
-import { API_ENDPOINTS } from "@/lib/api/endpoints"
+import { API_ENDPOINTS } from "@/lib/api/endpoints";
 // COMPONENTS
-import useGlobal from "@/hooks/useGlobal"
+import useGlobal from "@/hooks/useGlobal";
 
 const getCategories = async () => {
-  const response = await fetch(API_ENDPOINTS.PRODUCT_CATEGORIES.BASE)
-  const data = await response.json()
-  return data
-}
+  const response = await fetch(API_ENDPOINTS.PRODUCT_CATEGORIES.BASE);
+  const data = await response.json();
+  return data;
+};
 const getStorageUnits = async () => {
-  const response = await fetch(API_ENDPOINTS.PRODUCT_STORAGE_UNITS.BASE)
-  const data = await response.json()
-  return data
-}
+  const response = await fetch(API_ENDPOINTS.PRODUCT_STORAGE_UNITS.BASE);
+  const data = await response.json();
+  return data;
+};
 
-export default function useProductForm(id?: number) {  
+export default function useProductForm(id?: number) {
   // HOOKS
-  const { addProduct, updateProduct, getProduct } = useGlobal()
+  const { addProduct, updateProduct, getProduct } = useGlobal();
   // STATES
-  const [categories, setCategories] = useState([])
-  const [storageUnits, setStorageUnits] = useState([])
+  const [categories, setCategories] = useState([]);
+  const [storageUnits, setStorageUnits] = useState([]);
   const [formValues, setFormValues] = useState<ProductFormSchema>({
     name: "",
     description: "",
@@ -32,7 +32,7 @@ export default function useProductForm(id?: number) {
     price: 0,
     storageUnitId: "",
     categoryId: "",
-  })
+  });
 
   // FORM
   const form = useForm<ProductFormSchema>({
@@ -45,52 +45,55 @@ export default function useProductForm(id?: number) {
       storageUnitId: "",
       categoryId: "",
     },
-  })
-  
-  const loadStaticData  = useCallback(async () => {
-    try { 
+  });
+
+  const loadStaticData = useCallback(async () => {
+    try {
       const promises = await Promise.allSettled([
         getCategories(),
         getStorageUnits(),
-      ])
-      const [cats, units] = promises.map(
-        (promise) => promise.status === "fulfilled" ? promise.value : []
-      )
-      setCategories(cats)
-      setStorageUnits(units)
+      ]);
+      const [cats, units] = promises.map((promise) =>
+        promise.status === "fulfilled" ? promise.value : []
+      );
+      setCategories(cats);
+      setStorageUnits(units);
     } catch (error) {
       console.error("Error loading product data:", error);
     }
-  }, [])
+  }, []);
 
-  const loadProductData  = useCallback(async (productId:number) => {
-    try {
-      const product = await getProduct(productId)
-      if (!product) return
-      const { data } = product;
-      setFormValues({
-        ...data,
-        storageUnitId: String(data?.storageUnit.id),
-        categoryId: String(data?.category.id),
-      })
-      form.reset({
-        ...data,
-        storageUnitId: String(data?.storageUnit.id),
-        categoryId: String(data?.category.id),
-      })
-    } catch (error) {
-      console.error("Error loading product data:", error);
-    } 
-  }, [form, getProduct])
+  const loadProductData = useCallback(
+    async (productId: number) => {
+      try {
+        const product = await getProduct(productId);
+        if (!product) return;
+        const { data } = product;
+        setFormValues({
+          ...data,
+          storageUnitId: String(data?.storageUnit.id),
+          categoryId: String(data?.category.id),
+        });
+        form.reset({
+          ...data,
+          storageUnitId: String(data?.storageUnit.id),
+          categoryId: String(data?.category.id),
+        });
+      } catch (error) {
+        console.error("Error loading product data:", error);
+      }
+    },
+    [form, getProduct]
+  );
 
   // EFFECTS
-  useEffect(()=>{
-    loadStaticData()
+  useEffect(() => {
+    loadStaticData();
   }, [loadStaticData]);
 
-  useEffect(()=>{
-    if(id && categories.length > 0 && storageUnits.length > 0) {
-      loadProductData(id)
+  useEffect(() => {
+    if (id && categories.length > 0 && storageUnits.length > 0) {
+      loadProductData(id);
     }
   }, [id, categories, storageUnits, loadProductData]);
 
@@ -101,7 +104,7 @@ export default function useProductForm(id?: number) {
       storageUnitId: form.getValues().storageUnitId,
       categoryId: form.getValues().categoryId,
     };
-    addProduct(apiData)
+    addProduct(apiData);
   }
 
   const onUpdate = () => {
@@ -111,8 +114,8 @@ export default function useProductForm(id?: number) {
       storageUnitId: form.getValues().storageUnitId,
       categoryId: form.getValues().categoryId,
     };
-    updateProduct(id, apiData)
-  }
+    updateProduct(id, apiData);
+  };
 
   return {
     form,
@@ -121,5 +124,5 @@ export default function useProductForm(id?: number) {
     storageUnits,
     onCreate,
     onUpdate,
-  }
+  };
 }

@@ -14,10 +14,73 @@ import { productSelect } from './utils/const.prisma.query';
 export class ProductService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async getProducts(page: number = 1, limit: number = 10): Promise<GetResponse<ResponseProductDto[]>> {
+  async getProducts(
+    page: number = 1, 
+    limit: number = 10,
+    search: string,
+  ): Promise<GetResponse<ResponseProductDto[]>> {
     const formatedPage = Number(page);
     const formatedLimit = Number(limit);
+    const formatedSearch = search.toLowerCase();
     try {
+      if(formatedSearch && formatedSearch !== 'undefined' && formatedSearch.length > 0) {
+        console.log(formatedSearch)
+        const [products, total] = await this.prisma.$transaction(async(tx) => {
+          const products = await tx.product.findMany({
+            select: productSelect,
+            skip: (formatedPage - 1) * formatedLimit,
+            take: formatedLimit,
+            orderBy: { id: 'desc' },
+            where: {
+              OR: [
+                {
+                  name: {
+                    contains: formatedSearch,
+                    mode: 'insensitive',
+                  },
+                },
+                {
+                  description: {
+                    contains: formatedSearch,
+                    mode: 'insensitive',
+                  },
+                },
+              ],
+            },
+            
+          });
+          const total = await tx.product.count({
+            where: {
+              OR: [
+                {
+                  name: {
+                    contains: formatedSearch,
+                    mode: 'insensitive',
+                  },
+                },
+                {
+                  description: {
+                    contains: formatedSearch,
+                    mode: 'insensitive',
+                  },
+                },
+              ],
+            },
+          })
+          return [products, total];
+        });
+
+        return {
+          success: true,
+          data: products,
+          meta: {
+            total,
+            page,
+            totalPages: Math.ceil(total / limit),
+          },
+        };
+      }
+
       const [products, total] = await this.prisma.$transaction([
         this.prisma.product.findMany({
           select: productSelect,
@@ -27,7 +90,6 @@ export class ProductService {
         }),
         this.prisma.product.count(),
       ]);
-
       return {
         success: true,
         data: products,

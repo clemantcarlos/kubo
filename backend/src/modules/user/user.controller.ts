@@ -127,11 +127,6 @@ export class UserController {
   async createUserIdentityDocumentType(
     @Body() userIdentityDocumentType: UserIdentityDocumentTypeDto,
   ) {
-    const createdUserIdentityDocumentType =
-      this.userService.createUserIdentityDocument(userIdentityDocumentType);
-
-    if (!createdUserIdentityDocumentType) throw new NotFoundException();
-
-    return createdUserIdentityDocumentType;
+    return this.userService.createUserIdentityDocument(userIdentityDocumentType);
   }
 }

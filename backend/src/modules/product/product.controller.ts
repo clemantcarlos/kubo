@@ -40,9 +40,10 @@ export class ProductController {
   @HttpCode(HttpStatus.OK)
   async getProducts(
     @Query('page') page: number = 1, 
-    @Query('limit') limit: number = 10
+    @Query('limit') limit: number = 10,
+    @Query('search') search: string,
   ): Promise<GetResponse<ResponseProductDto[]>> {
-    return this.productService.getProducts(page, limit);
+    return this.productService.getProducts(page, limit, search);
   }
 
   @Public()

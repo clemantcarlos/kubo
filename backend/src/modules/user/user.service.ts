@@ -187,6 +187,12 @@ export class UserService {
     userIdentityDocumentType: UserIdentityDocumentTypeDto,
   ): Promise<UserIdentityDocumentType> {
     try {
+      const duplicatedUserIdentityDocumentType = await this.prisma.userIdentityDocumentType.findUnique({
+        where: {
+          name: userIdentityDocumentType.name,
+        },
+      });
+      if (duplicatedUserIdentityDocumentType) throw new BadRequestException('User identity document type already exists');
       return await this.prisma.userIdentityDocumentType.create({
         data: userIdentityDocumentType,
       });

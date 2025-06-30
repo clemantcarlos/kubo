@@ -124,6 +124,8 @@ model Product {
   categoryId    Int
 
   orders OrderItem[]
+
+  @@index([name, description])
 }
 
 model ProductStorageUnit {

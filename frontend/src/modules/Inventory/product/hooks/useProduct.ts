@@ -1,30 +1,31 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   getCoreRowModel,
-  getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
   SortingState,
   useReactTable,
 } from "@tanstack/react-table";
-import { DataTableProps } from "../interfaces/dataTabeProps";
+import useGlobal from "@/hooks/useGlobal";
+import { columns } from "../components/product-columns";
 
-type Props<TData, TValue> = Pick<
-  DataTableProps<TData, TValue>,
-  "columns" | "data"
->;
-
-export default function useProduct<TData, TValue>({
-  columns,
-  data,
-}: Props<TData, TValue>) {
+export default function useProduct() {
+  // HOOKS
+  const { getProducts, product } = useGlobal()
+  //STATES 
+  const [page, setPage] = useState<number>(1);
   const [sorting, setSorting] = useState<SortingState>([]);
-  const [globalFilter, setGlobalFilter] = useState<string>("");
-
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  // REFS
   const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
+  useEffect(() => {
+    getProducts(page, searchQuery)
+  }, [getProducts, page, searchQuery]);  
+  
+  // TABLE
   const table = useReactTable({
-    data,
+    data: product.data || [],
     columns,
     getCoreRowModel: getCoreRowModel(),
     // pagination
@@ -32,18 +33,14 @@ export default function useProduct<TData, TValue>({
     // sorting
     onSortingChange: setSorting,
     getSortedRowModel: getSortedRowModel(),
-    // filters
-    getFilteredRowModel: getFilteredRowModel(),
-    globalFilterFn: "auto",
     state: {
       sorting,
-      globalFilter,
     },
-    onGlobalFilterChange: setGlobalFilter,
   });
 
   const handleSearch = (value: string) => {
-    table.setGlobalFilter(String(value));
+    setPage(1);
+    setSearchQuery(value);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -61,5 +58,9 @@ export default function useProduct<TData, TValue>({
   return {
     table,
     handleInputChange,
+    data: product.data || [],
+    totalPages: product?.meta?.totalPages || 0,
+    page,
+    setPage,
   };
 }

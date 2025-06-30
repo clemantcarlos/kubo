@@ -24,6 +24,28 @@ const data = {
   versions: ["1.0.1", "1.1.0-alpha", "2.0.0-beta1"],
   navMain: [
     {
+      title: 'POS',
+      url: '/pos',
+      items: [
+        {
+          title: 'Activity',
+          url: '/pos/activity',
+        },
+        {
+          title: 'Report',
+          url: '/pos/report',
+        },
+        {
+          title: 'Inventory',
+          url: '/pos/inventory',
+        },
+        {
+          title: 'Settings',
+          url: '/pos/settings',
+        }
+      ],
+    },
+    {
       title: "Restaurante",
       url: "#",
       items: [
@@ -44,72 +66,6 @@ const data = {
         {
           title: "Productos",
           url: "products",
-        },
-      ],
-    },
-    {
-      title: "API Reference",
-      url: "#",
-      items: [
-        {
-          title: "Components",
-          url: "#",
-        },
-        {
-          title: "File Conventions",
-          url: "#",
-        },
-        {
-          title: "Functions",
-          url: "#",
-        },
-        {
-          title: "next.config.js Options",
-          url: "#",
-        },
-        {
-          title: "CLI",
-          url: "#",
-        },
-        {
-          title: "Edge Runtime",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Architecture",
-      url: "#",
-      items: [
-        {
-          title: "Accessibility",
-          url: "#",
-        },
-        {
-          title: "Fast Refresh",
-          url: "#",
-        },
-        {
-          title: "Next.js Compiler",
-          url: "#",
-        },
-        {
-          title: "Supported Browsers",
-          url: "#",
-        },
-        {
-          title: "Turbopack",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Community",
-      url: "#",
-      items: [
-        {
-          title: "Contribution Guide",
-          url: "#",
         },
       ],
     },
@@ -166,7 +122,7 @@ export function DashboardSidebar({
                       <SidebarMenuItem key={item.title}>
                         <SidebarMenuButton asChild 
                           isActive={item.title.toLowerCase() === crumb[0].crumb.toLowerCase()}>
-                          <Link to={item.url}>{item.title} </Link>
+                          <Link to={item.url} className="ms-2">{item.title} </Link>
                         </SidebarMenuButton>
                       </SidebarMenuItem>
                     ))}

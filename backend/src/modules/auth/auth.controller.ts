@@ -21,6 +21,7 @@ import { Public } from './common/decorators/public.decorator';
 // types
 import { UserWithTokens } from './types/userWithTokens';
 import { Tokens } from './types/tokens.type';
+import { ResponseDto } from '@/interfaces/getResponse';
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
@@ -29,14 +30,14 @@ export class AuthController {
   @Post('local/signup')
   @HttpCode(HttpStatus.CREATED)
   @UsePipes(new ValidationPipe())
-  signupLocal(@Body() user: CreateUserDto): Promise<UserWithTokens> {
+  signupLocal(@Body() user: CreateUserDto): Promise<ResponseDto<UserWithTokens>> {
     return this.authService.signupLocal(user);
   }
 
   @Public()
   @Post('local/signin')
   @HttpCode(HttpStatus.OK)
-  signinLocal(@Body() dto: AuthDto): Promise<UserWithTokens> {
+  signinLocal(@Body() dto: AuthDto): Promise<ResponseDto<UserWithTokens>> {
     return this.authService.signinLocal(dto);
   }
 
@@ -54,7 +55,7 @@ export class AuthController {
   refreshTokens(
     @GetCurrentUser('sub') userId: string,
     @GetCurrentUser('refreshToken') rt: string,
-  ): Promise<Tokens> {
+  ): Promise<ResponseDto<Tokens>> {
     return this.authService.refreshTokens(userId, rt);
   }
 }
