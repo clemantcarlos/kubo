@@ -1,0 +1,759 @@
+# Documentación del PurchaseService
+
+## Flujo Completo de Endpoints
+
+### 0. Crear un Proveedor
+
+**Paso 0:** Crear un proveedor antes de registrar una orden de compra  
+- **POST** `/suppliers`  
+  - **Body:**  
+    ```json
+    {
+      "name": "Proveedor Ejemplo",
+      "contactName": "Nombre Contacto",
+      "phone": "123456789",
+      "email": "proveedor@ejemplo.com",
+      "address": "Dirección del proveedor"
+    }
+    ```
+
+**Respuesta:**  
+- Devuelve el proveedor creado con su ID y datos.
+
+---
+
+### 1. Crear una Orden de Compra
+
+**Paso 1:** (Opcional) Buscar proveedores y productos para seleccionar en la orden  
+- **GET** `/suppliers`  
+- **GET** `/products`  
+
+**Paso 2:** Crear la orden de compra  
+- **POST** `/inventory/purchase`  
+  - **Body:**  
+    ```json
+    {
+      "supplierId": "string",
+      "expectedDeliveryDate": "YYYY-MM-DD",
+      "notes": "Opcional",
+      "createdBy": "userId",
+      "items": [
+        {
+          "productId": "string",
+          "quantity": 10,
+          "unitPrice": 100
+        }
+      ]
+    }
+    ```
+
+**Respuesta:**  
+- Devuelve la orden de compra creada, con su número y detalles.
+
+---
+
+### 2. Buscar (Listar) Órdenes de Compra
+
+**Paso 3:** Listar todas las órdenes de compra (con filtros opcionales)  
+- **GET** `/inventory/purchase?page=1&limit=10&status=PENDING&supplierId=...`  
+  - Puedes filtrar por estado (`PENDING`, `APPROVED`, etc.) y proveedor.
+
+**Respuesta:**  
+- Devuelve un listado paginado de órdenes de compra.
+
+---
+
+### 3. Buscar una Orden de Compra Específica
+
+**Paso 4:** Obtener los detalles de una orden de compra específica  
+- **GET** `/inventory/purchase/:id`  
+  - Reemplaza `:id` por el ID de la orden de compra.
+
+**Respuesta:**  
+- Devuelve todos los detalles de la orden, incluyendo proveedor, productos, estado, etc.
+
+---
+
+### 4. Aprobar una Orden de Compra
+
+**Paso 5:** Aprobar una orden de compra pendiente  
+- **PUT** `/inventory/purchase/:id/approve`  
+  - **Body:**  
+    ```json
+    {
+      "approvedBy": "userId"
+    }
+    ```
+
+**Respuesta:**  
+- Devuelve la orden de compra actualizada con estado `APPROVED`.
+
+---
+
+### 5. Cancelar una Orden de Compra
+
+**Paso 6:** Cancelar una orden de compra (solo si no está recibida)  
+- **PUT** `/inventory/purchase/:id/cancel`  
+  - **Body:**  
+    ```json
+    {
+      "cancelledBy": "userId",
+      "reason": "Motivo de la cancelación"
+    }
+    ```
+
+**Respuesta:**  
+- Devuelve la orden de compra actualizada con estado `CANCELLED`.
+
+---
+
+### 6. Recibir una Orden de Compra
+
+**Paso 7:** Recibir productos de una orden de compra aprobada  
+- **POST** `/inventory/purchase/:id/receive`  
+  - **Body:**  
+    ```json
+    {
+      "invoiceNumber": "INV-001",
+      "invoiceDate": "YYYY-MM-DD",
+      "invoiceAmount": 1000,
+      "receivedBy": "userId",
+      "notes": "Opcional",
+      "isPartial": true,
+      "forceComplete": false,
+      "items": [
+        {
+          "productId": "string",
+          "quantityReceived": 8,
+          "unitPrice": 100,
+          "notes": "Opcional"
+        }
+      ]
+    }
+    ```
+
+**Notas importantes:**
+- Si `isPartial: true`, la orden permanece en estado `APPROVED` y puede recibir más productos en el futuro.
+- Si `forceComplete: true`, la orden se marca como `RECEIVED` aunque no se haya recibido la cantidad total originalmente ordenada. Útil cuando el proveedor no entregará el resto y se decide cerrar la orden.
+- Si no se indica `forceComplete` y se han recibido todas las cantidades ordenadas (sumando todas las recepciones), la orden pasa automáticamente a estado `RECEIVED`.
+- Puedes hacer varias recepciones parciales hasta completar o cerrar la orden.
+
+**Respuesta:**  
+- Devuelve la recepción creada, los movimientos de inventario generados y el nuevo estado de la orden.
+
+---
+
+### 7. Gestionar Facturas (Opcional)
+
+**Paso 8:** Crear una factura asociada a la recepción  
+- **POST** `/inventory/purchase/invoice`  
+  - **Body:**  
+    ```json
+    {
+      "invoiceNumber": "INV-001",
+      "supplierId": "string",
+      "invoiceDate": "YYYY-MM-DD",
+      "dueDate": "YYYY-MM-DD",
+      "totalAmount": 1000,
+      "notes": "Opcional"
+    }
+    ```
+
+**Paso 9:** Registrar pagos de la factura  
+- **PUT** `/inventory/purchase/invoice/:id/pay`  
+  - **Body:**  
+    ```json
+    {
+      "amount": 500
+    }
+    ```
+
+---
+
+### Flujo Completo de Estados
+
+```
+PENDING → APPROVED → RECEIVED
+    ↓
+CANCELLED
+```
+
+### Resumen de Endpoints
+
+1. **POST** `/inventory/purchase` — Crear orden de compra  
+2. **GET** `/inventory/purchase` — Listar órdenes de compra  
+3. **GET** `/inventory/purchase/:id` — Ver detalles de una orden de compra  
+4. **PUT** `/inventory/purchase/:id/approve` — Aprobar orden de compra  
+5. **PUT** `/inventory/purchase/:id/cancel` — Cancelar orden de compra  
+6. **POST** `/inventory/purchase/:id/receive` — Recibir productos  
+7. **POST** `/inventory/purchase/invoice` — Crear factura  
+8. **PUT** `/inventory/purchase/invoice/:id/pay` — Pagar factura  
+
+---
+
+### Notas Importantes del Flujo
+
+- **Aprobar:** Solo órdenes con estado `PENDING`  
+- **Cancelar:** Solo órdenes que NO estén en estado `RECEIVED`  
+- **Recibir:** Solo órdenes con estado `APPROVED`  
+- **Recepción parcial:** Si `isPartial: true`, la orden mantiene estado `APPROVED`  
+- **Recepción completa:** Si `isPartial: false`, la orden cambia a estado `RECEIVED`  
+
+---
+
+## Descripción General
+El PurchaseService maneja toda la lógica de negocio relacionada con las compras, incluyendo órdenes de compra, recepción de productos, facturación y pagos. Utiliza transacciones de base de datos para garantizar la integridad de los datos.
+
+---
+
+## Métodos del Service
+
+### 1. getPurchaseOrders()
+**Propósito:** Obtener lista paginada de órdenes de compra con filtros opcionales.
+
+**Parámetros:**
+- `page` (number): Número de página (default: 1)
+- `limit` (number): Elementos por página (default: 10)
+- `status` (string, opcional): Filtrar por estado (PENDING, APPROVED, RECEIVED, CANCELLED)
+- `supplierId` (string, opcional): Filtrar por proveedor
+
+**Flujo:**
+1. Valida y formatea los parámetros de paginación
+2. Construye filtros WHERE según parámetros opcionales
+3. Ejecuta transacción para obtener órdenes y total
+4. Incluye relaciones: supplier, user, items, receipts
+5. Retorna respuesta paginada con metadata
+
+**Respuesta:**
+```json
+{
+  "success": true,
+  "data": [PurchaseOrder[]],
+  "meta": {
+    "total": number,
+    "page": number,
+    "totalPages": number
+  }
+}
+```
+
+---
+
+### 2. getPurchaseOrder(id)
+**Propósito:** Obtener una orden de compra específica con todos sus detalles.
+
+**Parámetros:**
+- `id` (number): ID de la orden de compra
+
+**Flujo:**
+1. Convierte ID a número
+2. Busca orden con todas sus relaciones
+3. Valida que la orden existe
+4. Retorna orden completa con items y recepciones
+
+**Respuesta:**
+```json
+{
+  "success": true,
+  "data": PurchaseOrder,
+  "meta": {
+    "total": 1,
+    "page": 1,
+    "totalPages": 1
+  }
+}
+```
+
+---
+
+### 3. createPurchaseOrder(dto)
+**Propósito:** Crear una nueva orden de compra con sus items.
+
+**Parámetros:**
+- `dto` (CreatePurchaseOrderDto): Datos de la orden y items
+
+**Flujo:**
+1. Inicia transacción de base de datos
+2. Calcula el total de la orden sumando (quantity * unitPrice) de cada item
+3. Genera número de orden automático (PO-YYYY-XXX)
+4. Crea la orden de compra con estado PENDING
+5. Crea todos los items de la orden
+6. Retorna orden creada con items
+
+**Validaciones:**
+- Verifica que el proveedor existe
+- Verifica que los productos existen
+- Calcula subtotales automáticamente
+
+**Respuesta:**
+```json
+{
+  "success": true,
+  "data": {
+    "id": number,
+    "orderNumber": string,
+    "supplier": object,
+    "items": array,
+    "totalAmount": number,
+    "status": "PENDING"
+  }
+}
+```
+
+---
+
+### 4. approvePurchaseOrder(id, dto)
+**Propósito:** Aprobar una orden de compra pendiente.
+
+**Parámetros:**
+- `id` (number): ID de la orden
+- `dto` (ApprovePurchaseOrderDto): Datos de aprobación
+
+**Flujo:**
+1. Busca la orden por ID
+2. Valida que existe y está en estado PENDING
+3. Actualiza estado a APPROVED
+4. Registra quién aprobó y cuándo
+5. Retorna orden actualizada
+
+**Validaciones:**
+- Solo órdenes PENDING pueden ser aprobadas
+- Debe especificar quién aprueba
+
+**Respuesta:**
+```json
+{
+  "success": true,
+  "data": {
+    "id": number,
+    "status": "APPROVED",
+    "approvedBy": string,
+    "approvedAt": Date
+  }
+}
+```
+
+---
+
+### 5. cancelPurchaseOrder(id, dto)
+**Propósito:** Cancelar una orden de compra.
+
+**Parámetros:**
+- `id` (number): ID de la orden
+- `dto` (CancelPurchaseOrderDto): Datos de cancelación
+
+**Flujo:**
+1. Busca la orden por ID
+2. Valida que existe y no está RECEIVED
+3. Actualiza estado a CANCELLED
+4. Registra quién canceló, cuándo y el motivo
+5. Retorna orden actualizada
+
+**Validaciones:**
+- No se pueden cancelar órdenes ya recibidas
+- Debe especificar motivo de cancelación
+
+**Respuesta:**
+```json
+{
+  "success": true,
+  "data": {
+    "id": number,
+    "status": "CANCELLED",
+    "cancelledBy": string,
+    "cancelledAt": Date,
+    "cancellationReason": string
+  }
+}
+```
+
+---
+
+### 6. receivePurchase(id, dto)
+**Propósito:** Registrar la recepción de productos de una orden de compra.
+
+**Parámetros:**
+- `id` (number): ID de la orden
+- `dto` (CreatePurchaseReceiptDto): Datos de recepción
+  - `isPartial` (boolean, opcional): Indica si la recepción es parcial.
+  - `forceComplete` (boolean, opcional): Si es true, fuerza el cierre de la orden como `RECEIVED` aunque falte producto.
+
+**Flujo:**
+1. Inicia transacción de base de datos
+2. Valida que la orden existe y está APPROVED
+3. Genera número de recepción automático (REC-YYYY-XXX)
+4. Crea registro de recepción
+5. Para cada item recibido:
+   - Crea item de recepción
+   - Actualiza stock del producto (incrementa)
+   - Crea movimiento de inventario tipo ENTRY
+6. Suma lo recibido hasta el momento para cada producto.
+7. Si `forceComplete` es true, la orden se marca como `RECEIVED` aunque falte producto.
+8. Si no, la orden solo se marca como `RECEIVED` si se ha recibido todo lo ordenado.
+9. Retorna recepción con items y movimientos
+
+**Validaciones:**
+- Solo órdenes APPROVED pueden recibir productos
+- Verifica que los productos existen
+- Actualiza stock automáticamente
+
+**Respuesta:**
+```json
+{
+  "success": true,
+  "data": {
+    "receipt": {
+      "id": number,
+      "receiptNumber": string,
+      "items": array
+    },
+    "inventoryMovements": array,
+    "orderStatus": string
+  }
+}
+```
+
+---
+
+### 7. createInvoice(dto)
+**Propósito:** Crear una factura independiente (sin orden de compra).
+
+**Parámetros:**
+- `dto` (CreateInvoiceDto): Datos de la factura
+
+**Flujo:**
+1. Valida que el proveedor existe
+2. Crea factura con estado PENDING
+3. Retorna factura creada
+
+**Validaciones:**
+- Número de factura debe ser único
+- Proveedor debe existir
+
+**Respuesta:**
+```json
+{
+  "success": true,
+  "data": {
+    "id": number,
+    "invoiceNumber": string,
+    "supplier": object,
+    "totalAmount": number,
+    "status": "PENDING"
+  }
+}
+```
+
+---
+
+### 8. payInvoice(id, dto)
+**Propósito:** Registrar pago de una factura.
+
+**Parámetros:**
+- `id` (number): ID de la factura
+- `dto` (PayInvoiceDto): Datos del pago
+
+**Flujo:**
+1. Busca la factura por ID
+2. Calcula nuevo monto pagado
+3. Actualiza estado según monto pagado:
+   - PENDING → PARTIAL (si pago parcial)
+   - PENDING/PARTIAL → PAID (si pago completo)
+4. Retorna factura actualizada
+
+**Validaciones:**
+- Factura debe existir
+- No puede pagar más del monto total
+
+**Respuesta:**
+```json
+{
+  "success": true,
+  "data": {
+    "id": number,
+    "paidAmount": number,
+    "status": "PAID" | "PARTIAL"
+  }
+}
+```
+
+---
+
+## Flujos de Trabajo Principales
+
+### Flujo 1: Compra Completa
+1. `createPurchaseOrder()` → Crea orden PENDING
+2. `approvePurchaseOrder()` → Aprueba orden
+3. `receivePurchase()` → Recibe productos y actualiza inventario
+4. `createInvoice()` → Registra factura
+5. `payInvoice()` → Registra pago
+
+### Flujo 2: Recepción Parcial
+1. `receivePurchase(isPartial: true)` → Recibe algunos productos
+2. `receivePurchase(isPartial: true)` → Recibe productos restantes
+3. `receivePurchase(isPartial: false)` → Finaliza recepción
+
+### Flujo 3: Cancelación
+1. `createPurchaseOrder()` → Crea orden PENDING
+2. `cancelPurchaseOrder()` → Cancela orden
+
+---
+
+## Consideraciones Técnicas
+
+### Transacciones
+- `createPurchaseOrder()`: Transacción para crear orden + items
+- `receivePurchase()`: Transacción para recepción + inventario + movimientos
+
+### Generación Automática
+- Números de orden: PO-YYYY-XXX
+- Números de recepción: REC-YYYY-XXX
+
+### Validaciones de Estado
+- PENDING → APPROVED → RECEIVED
+- PENDING → CANCELLED
+- Solo APPROVED puede recibir productos
+
+### Manejo de Errores
+- PrismaClientKnownRequestError para errores de BD
+- NotFoundException para recursos no encontrados
+- BadRequestException para validaciones de negocio
+
+---
+
+## Notas de Implementación
+
+1. **Autenticación:** Los métodos actualmente usan 'system' como usuario por defecto. Debe integrarse con el contexto de autenticación.
+
+2. **Números Automáticos:** La generación de números de orden/recepción es secuencial. Para producción, considerar usar UUIDs o números más robustos.
+
+3. **Stock:** El stock se actualiza automáticamente en recepciones. Considerar validaciones adicionales para evitar stock negativo.
+
+4. **Movimientos de Inventario:** Cada recepción genera movimientos de tipo ENTRY para auditoría.
+
+5. **Facturación:** Las facturas pueden ser independientes o vinculadas a recepciones según el flujo de negocio.
+
+---
+
+## Ejemplos de uso de la API
+
+### 1. Listar órdenes de compra
+**Método:** GET  
+**Ruta:** `/inventory/purchase?page=1&limit=10&status=PENDING&supplierId=uuid`
+**Headers:**
+```
+Content-Type: application/json
+Authorization: Bearer <token>
+```
+**Body:** _(no aplica)_
+**Respuesta:**
+```json
+{
+  "success": true,
+  "data": [ /* array de órdenes */ ],
+  "meta": { "total": 2, "page": 1, "totalPages": 1 }
+}
+```
+
+---
+
+### 2. Obtener una orden de compra
+**Método:** GET  
+**Ruta:** `/inventory/purchase/1`
+**Headers:**
+```
+Content-Type: application/json
+Authorization: Bearer <token>
+```
+**Body:** _(no aplica)_
+**Respuesta:**
+```json
+{
+  "success": true,
+  "data": { /* datos de la orden */ },
+  "meta": { "total": 1, "page": 1, "totalPages": 1 }
+}
+```
+
+---
+
+### 3. Crear una orden de compra
+**Método:** POST  
+**Ruta:** `/inventory/purchase`
+**Headers:**
+```
+Content-Type: application/json
+Authorization: Bearer <token>
+```
+**Body:**
+```json
+{
+  "supplierId": "uuid-proveedor",
+  "expectedDeliveryDate": "2024-07-01",
+  "notes": "Pedido urgente",
+  "createdBy": "uuid-usuario",
+  "items": [
+    { "productId": 1, "quantity": 10, "unitPrice": 5.5 },
+    { "productId": 2, "quantity": 20, "unitPrice": 2.0 }
+  ]
+}
+```
+**Respuesta:**
+```json
+{
+  "success": true,
+  "data": { /* orden creada */ }
+}
+```
+
+---
+
+### 4. Aprobar una orden de compra
+**Método:** PUT  
+**Ruta:** `/inventory/purchase/1/approve`
+**Headers:**
+```
+Content-Type: application/json
+Authorization: Bearer <token>
+```
+**Body:**
+```json
+{
+  "approvedBy": "uuid-usuario",
+  "notes": "Aprobado por gerente"
+}
+```
+**Respuesta:**
+```json
+{
+  "success": true,
+  "data": { /* orden actualizada */ }
+}
+```
+
+---
+
+### 5. Cancelar una orden de compra
+**Método:** PUT  
+**Ruta:** `/inventory/purchase/1/cancel`
+**Headers:**
+```
+Content-Type: application/json
+Authorization: Bearer <token>
+```
+**Body:**
+```json
+{
+  "cancelledBy": "uuid-usuario",
+  "reason": "Proveedor no disponible"
+}
+```
+**Respuesta:**
+```json
+{
+  "success": true,
+  "data": { /* orden cancelada */ }
+}
+```
+
+---
+
+### 6. Registrar recepción de productos
+**Método:** POST  
+**Ruta:** `/inventory/purchase/1/receive`
+**Headers:**
+```
+Content-Type: application/json
+Authorization: Bearer <token>
+```
+**Body:**
+```json
+{
+  "invoiceNumber": "FAC-2024-001",
+  "invoiceDate": "2024-07-01",
+  "invoiceAmount": 1500.00,
+  "receivedBy": "uuid-usuario",
+  "notes": "Todo en buen estado",
+  "isPartial": false,
+  "items": [
+    { "productId": 1, "quantityReceived": 10, "unitPrice": 5.5 },
+    { "productId": 2, "quantityReceived": 20, "unitPrice": 2.0 }
+  ]
+}
+```
+**Respuesta:**
+```json
+{
+  "success": true,
+  "data": { /* recepción y movimientos */ }
+}
+```
+
+---
+
+### 7. Crear una factura
+**Método:** POST  
+**Ruta:** `/inventory/purchase/invoice`
+**Headers:**
+```
+Content-Type: application/json
+Authorization: Bearer <token>
+```
+**Body:**
+```json
+{
+  "invoiceNumber": "FAC-2024-002",
+  "supplierId": "uuid-proveedor",
+  "invoiceDate": "2024-07-01",
+  "dueDate": "2024-07-15",
+  "totalAmount": 2000.00,
+  "notes": "Pago a 15 días"
+}
+```
+**Respuesta:**
+```json
+{
+  "success": true,
+  "data": { /* factura creada */ }
+}
+```
+
+---
+
+### 8. Pagar una factura
+**Método:** PUT  
+**Ruta:** `/inventory/purchase/invoice/1/pay`
+**Headers:**
+```
+Content-Type: application/json
+Authorization: Bearer <token>
+```
+**Body:**
+```json
+{
+  "paymentDate": "2024-07-10",
+  "paymentMethod": "TRANSFER",
+  "amount": 2000.00
+}
+```
+**Respuesta:**
+```json
+{
+  "success": true,
+  "data": { /* factura pagada */ }
+}
+```
+
+---
+
+**Notas:**
+- Todos los endpoints requieren autenticación (Bearer token) salvo que se indique lo contrario.
+- Los IDs pueden ser numéricos o UUID según el modelo.
+- Los campos de fechas deben estar en formato ISO (`YYYY-MM-DD` o `YYYY-MM-DDTHH:mm:ss.sssZ`).
+- Los errores se devuelven en formato:
+```json
+{
+  "success": false,
+  "message": "Descripción del error"
+}
+``` 

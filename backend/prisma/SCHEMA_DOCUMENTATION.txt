@@ -1,0 +1,141 @@
+# Documentación del schema.prisma para Sistema POS
+
+## 1. Introducción
+Este documento explica la estructura del schema.prisma utilizado para un sistema POS (Punto de Venta), detallando cada modelo, su propósito y relaciones. También incluye sugerencias de mejoras a futuro.
+
+---
+
+## 2. Modelos principales
+
+### 2.1 User
+- **Propósito:** Representa a los usuarios del sistema (empleados, administradores, etc.).
+- **Campos clave:**
+  - `id`, `name`, `email`, `identityDocument`, `phoneNumber`, `address`, `password`, `hashedRt`
+  - `roleId`: Relación con el rol del usuario
+  - `identityDocumentTypeId`: Tipo de documento de identidad
+  - `orders`: Relación con las órdenes realizadas por el usuario
+
+### 2.2 UserIdentityDocumentType
+- **Propósito:** Define los tipos de documentos de identidad (DNI, pasaporte, etc.).
+
+### 2.3 UserRole y UserRolePermission
+- **Propósito:** Gestionan los roles de usuario y sus permisos asociados.
+
+### 2.4 Permission
+- **Propósito:** Define los permisos que pueden asignarse a los roles.
+
+### 2.5 Product
+- **Propósito:** Representa los productos disponibles para la venta.
+- **Campos clave:**
+  - `name`, `description`, `stock`, `price`, `imageUrl`, `imageHash`, `isAvailable`
+  - `storageUnitId`: Unidad de almacenamiento
+  - `categoryId`: Categoría del producto
+  - `orders`: Relación con los items de orden
+
+### 2.6 ProductStorageUnit
+- **Propósito:** Define las unidades de almacenamiento de los productos (ej: caja, pieza, litro).
+
+### 2.7 ProductCategory
+- **Propósito:** Clasifica los productos en categorías (ej: pan, pasteles, bebidas).
+
+### 2.8 Order y OrderItem
+- **Propósito:**
+  - `Order`: Representa una venta realizada a un cliente.
+  - `OrderItem`: Detalla los productos vendidos en cada orden.
+
+### 2.9 Task
+- **Propósito:** Modelo genérico para tareas pendientes (puede usarse para recordatorios internos).
+
+### 2.10 Recipe
+- **Propósito:** Representa una receta para la producción de productos.
+- **Campos clave:**
+  - `id`, `name`, `description`, `yield`, `unit`, `isActive`, `createdAt`, `updatedAt`
+- **Relaciones:**
+  - `ingredients`: Relación con los ingredientes de la receta
+  - `products`: Relación con los productos que usan esta receta
+
+---
+
+## 3. Nuevos modelos para gestión de inventario y compras
+
+### 3.1 InventoryMovement
+- **Propósito:** Registrar cada movimiento de inventario (entrada, salida, ajuste, venta, compra, devolución).
+- **Campos:**
+  - `id`, `productId`, `type`, `quantity`, `reason`, `reference`, `createdAt`, `userId`
+- **Enum InventoryMovementType:**
+  - `ENTRY`, `EXIT`, `ADJUSTMENT`, `SALE`, `PURCHASE`, `RETURN`
+- **Ventaja:** Permite auditar y reportar todos los cambios de inventario, saber por qué y cuándo cambió el stock de cada producto.
+
+### 3.2 Purchase y PurchaseItem
+- **Propósito:** Registrar compras a proveedores.
+- **Campos:**
+  - `Purchase`: `id`, `supplier`, `total`, `createdAt`, `userId`, `items`
+  - `PurchaseItem`: `id`, `purchaseId`, `productId`, `quantity`, `unitPrice`, `subtotal`
+- **Ventaja:** Permite llevar registro de todas las compras a proveedores, sus detalles y costos.
+
+### 3.3 RecipeIngredient
+- **Propósito:** Define los ingredientes de una receta.
+- **Campos:**
+  - `id`, `recipeId`, `productId`, `quantity`, `unit`
+- **Relaciones:**
+  - `recipe`: Relación con la receta
+  - `product`: Relación con el producto
+
+### 3.4 Production
+- **Propósito:** Representa la producción de un producto.
+- **Campos:**
+  - `id`, `recipeId`, `quantity`, `status`, `startedAt`, `completedAt`, `userId`
+- **Relaciones:**
+  - `recipe`: Relación con la receta
+- **Enum ProductionStatus:**
+  - `IN_PROGRESS`, `COMPLETED`, `CANCELLED`
+
+---
+
+## 4. Flujo de operaciones
+
+1. **Compra de productos:**
+   - Se crea un registro en `Purchase` y sus `PurchaseItem`.
+   - Por cada producto comprado, se crea un `InventoryMovement` tipo `ENTRY`.
+2. **Venta de productos:**
+   - Se crea un registro en `Order` y sus `OrderItem`.
+   - Por cada producto vendido, se crea un `InventoryMovement` tipo `EXIT` o `SALE`.
+3. **Ajustes de inventario:**
+   - Se crea un `InventoryMovement` tipo `ADJUSTMENT` para correcciones, mermas, etc.
+
+---
+
+## 5. Mejoras sugeridas a futuro (paso a paso)
+
+### Paso 1: Tabla de Proveedores (Supplier)
+- **Propósito:** Registrar información detallada de proveedores.
+- **Ventaja:** Permite reportes y trazabilidad de compras por proveedor.
+
+### Paso 2: Tabla de Clientes (Customer)
+- **Propósito:** Registrar clientes frecuentes o para facturación.
+- **Ventaja:** Permite reportes de ventas por cliente y programas de fidelidad.
+
+### Paso 3: Auditoría de cambios
+- **Propósito:** Registrar quién y cuándo modifica registros clave (productos, precios, stock).
+- **Ventaja:** Mayor seguridad y trazabilidad.
+
+### Paso 4: Soporte para múltiples almacenes
+- **Propósito:** Permitir que los productos estén en diferentes ubicaciones o sucursales.
+- **Ventaja:** Gestión avanzada de inventario y transferencias entre almacenes.
+
+### Paso 5: Integración con facturación electrónica
+- **Propósito:** Cumplir con normativas fiscales y emitir comprobantes electrónicos.
+
+### Paso 6: Reportes avanzados
+- **Propósito:** Generar reportes de ventas, compras, inventario, utilidades, etc.
+
+---
+
+## 6. Notas finales
+- El modelo es flexible y escalable.
+- Permite trazabilidad completa de inventario, compras y ventas.
+- Las mejoras sugeridas pueden implementarse de forma incremental según las necesidades del negocio.
+
+---
+
+**Este documento debe mantenerse actualizado con cada cambio en el schema para asegurar una documentación clara y útil para todo el equipo.** 

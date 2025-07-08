@@ -12,6 +12,7 @@ import { TableModule } from '@/modules/table/table.module';
 import { ProductModule } from '@/modules/product/product.module';
 import { ProductCategoryModule } from '@/modules/product-category/product-category.module';
 import { ProductStorageUnitModule } from '@/modules/product-storage-unit/product-storage-unit.module';
+import { InventoryModule } from './modules/inventory/inventory.module';
 @Module({
   imports: [
     PrismaModule,
@@ -23,6 +24,7 @@ import { ProductStorageUnitModule } from '@/modules/product-storage-unit/product
     ProductCategoryModule,
     TableModule,
     ProductStorageUnitModule,
+    InventoryModule,
   ],
   controllers: [],
   providers: [

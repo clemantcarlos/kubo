@@ -17,9 +17,9 @@ model User {
   password         String
   hashedRt         String?
 
-  isDeleted        Boolean @default(false)
-  deletedAt        DateTime?
-  
+  isDeleted Boolean   @default(false)
+  deletedAt DateTime?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
 
@@ -30,10 +30,25 @@ model User {
   identityDocumentTypeId Int
 
   orders Order[]
+
+  // Relaciones para compras
+  createdPurchaseOrders   PurchaseOrder[]
+  approvedPurchaseOrders  PurchaseOrder[]     @relation("ApprovedBy")
+  cancelledPurchaseOrders PurchaseOrder[]     @relation("CancelledBy")
+  receivedPurchases       PurchaseReceipt[]
+  productions             Production[]
+  inventoryMovements      InventoryMovement[]
+
+  purchases Purchase[]
+
+  // Relaciones para vents
+  
+  sales Sale[]
 }
+
 // TODO : el documento de identidad no es solo de los usuarios sino de cualquier tipo de persona.
 model UserIdentityDocumentType {
-  id          Int   @id @default(autoincrement())
+  id          Int      @id @default(autoincrement())
   name        String   @unique
   description String?
   createdAt   DateTime @default(now())
@@ -43,7 +58,7 @@ model UserIdentityDocumentType {
 }
 
 model UserRole {
-  id          Int   @id @default(autoincrement()) 
+  id          Int      @id @default(autoincrement())
   name        String   @unique
   description String?
   createdAt   DateTime @default(now())
@@ -105,27 +120,44 @@ model OrderItem {
 }
 
 model Product {
-  id          Int      @id @default(autoincrement())
+  id          Int     @id @default(autoincrement())
   name        String
   description String?
   stock       Int
   price       Float
   imageUrl    String?
-  imageHash   String?  @unique
-
+  imageHash   String? @unique
   isAvailable Boolean @default(true)
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @default(now()) @updatedAt
+  // Nuevos campos
+  type     ProductType @default(RAW_MATERIAL)
+  recipe   Recipe?     @relation(fields: [recipeId], references: [id])
+  recipeId Int?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
 
   storageUnit   ProductStorageUnit @relation(fields: [storageUnitId], references: [id])
   storageUnitId Int
   category      ProductCategory    @relation(fields: [categoryId], references: [id])
   categoryId    Int
 
-  orders OrderItem[]
+  // Relaciones
+  orders             OrderItem[]
+  ingredients        RecipeIngredient[] // Como ingrediente en otras recetas
+  productions        Production[] // Como producto final en producciones
+  movements          InventoryMovement[]
+  purchaseOrderItems PurchaseOrderItem[]
+  receiptItems       PurchaseReceiptItem[]
+  purchaseItems      PurchaseItem[]
+  saleItems          SaleItem[] // Relación inversa agregada
+}
 
-  @@index([name, description])
+enum ProductType {
+  RAW_MATERIAL // Harina, huevos, sal
+  FINISHED_GOOD // Pan, pasteles
+  PACKAGING // Bolsas, cajas
+  CONSUMABLE // Aceite, gas
 }
 
 model ProductStorageUnit {
@@ -156,4 +188,264 @@ model Task {
   status      String   @default("pending")
   createdAt   DateTime @default(now())
   updatedAt   DateTime @default(now()) @updatedAt
+}
+
+model InventoryMovement {
+  id                Int                   @id @default(autoincrement())
+  product           Product               @relation(fields: [productId], references: [id])
+  productId         Int
+  type              InventoryMovementType
+  quantity          Int
+  reason            String?
+  reference         String? // Puede ser el id de la compra, venta, ajuste, etc.
+  createdAt         DateTime              @default(now())
+  user              User?                 @relation(fields: [userId], references: [id])
+  userId            String?
+  productionId      Int?
+  production        Production?           @relation(fields: [productionId], references: [id])
+  purchaseReceiptId Int?
+  purchaseReceipt   PurchaseReceipt?      @relation(fields: [purchaseReceiptId], references: [id])
+}
+
+enum InventoryMovementType {
+  ENTRY
+  EXIT
+  ADJUSTMENT
+  SALE
+  PURCHASE
+  RETURN
+}
+
+model Purchase {
+  id        Int            @id @default(autoincrement())
+  supplier  String // Nombre del proveedor, puedes hacer una tabla Supplier si lo deseas
+  total     Float
+  createdAt DateTime       @default(now())
+  user      User?          @relation(fields: [userId], references: [id])
+  userId    String?
+  items     PurchaseItem[]
+}
+
+model PurchaseItem {
+  id         Int      @id @default(autoincrement())
+  purchase   Purchase @relation(fields: [purchaseId], references: [id])
+  purchaseId Int
+  product    Product  @relation(fields: [productId], references: [id])
+  productId  Int
+  quantity   Int
+  unitPrice  Float
+  subtotal   Float
+}
+
+model Recipe {
+  id          Int      @id @default(autoincrement())
+  name        String // "Receta de Pan"
+  description String?
+  yield       Int // Cantidad que produce (ej: 10 panes)
+  unit        String // Unidad de medida (ej: "unidades")
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now()) @updatedAt
+
+  // Relaciones
+  ingredients RecipeIngredient[]
+  products    Product[] // Productos que usan esta receta
+  productions Production[]
+}
+
+model RecipeIngredient {
+  id        Int     @id @default(autoincrement())
+  recipe    Recipe  @relation(fields: [recipeId], references: [id])
+  recipeId  Int
+  product   Product @relation(fields: [productId], references: [id])
+  productId Int
+  quantity  Float // Cantidad necesaria
+  unit      String // Unidad de medida
+
+  @@unique([recipeId, productId])
+}
+
+model Production {
+  id          Int              @id @default(autoincrement())
+  recipe      Recipe           @relation(fields: [recipeId], references: [id])
+  recipeId    Int
+  quantity    Int // Cantidad producida
+  status      ProductionStatus @default(IN_PROGRESS)
+  startedAt   DateTime         @default(now())
+  completedAt DateTime?
+  user        User             @relation(fields: [userId], references: [id])
+  userId      String
+  productId   Int
+  product     Product          @relation(fields: [productId], references: [id])
+
+  // Relaciones
+  movements InventoryMovement[]
+}
+
+enum ProductionStatus {
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+model Supplier {
+  id        String   @id @default(uuid())
+  name      String
+  email     String?
+  phone     String?
+  address   String?
+  taxId     String? // RUC, NIT, etc.
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  // Relaciones
+  purchaseOrders PurchaseOrder[]
+  invoices       Invoice[]
+}
+
+model PurchaseOrder {
+  id                   Int                 @id @default(autoincrement())
+  orderNumber          String              @unique // PO-2024-001
+  supplierId           String
+  supplier             Supplier            @relation(fields: [supplierId], references: [id])
+  status               PurchaseOrderStatus @default(PENDING)
+  expectedDeliveryDate DateTime
+  actualDeliveryDate   DateTime?
+  totalAmount          Float
+  notes                String?
+
+  // Usuarios involucrados
+  createdBy          String
+  user               User      @relation(fields: [createdBy], references: [id])
+  approvedBy         String?
+  approvedByUser     User?     @relation("ApprovedBy", fields: [approvedBy], references: [id])
+  approvedAt         DateTime?
+  cancelledBy        String?
+  cancelledByUser    User?     @relation("CancelledBy", fields: [cancelledBy], references: [id])
+  cancelledAt        DateTime?
+  cancellationReason String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  // Relaciones
+  items    PurchaseOrderItem[]
+  receipts PurchaseReceipt[]
+}
+
+enum PurchaseOrderStatus {
+  PENDING
+  APPROVED
+  RECEIVED
+  CANCELLED
+}
+
+model PurchaseOrderItem {
+  id              Int           @id @default(autoincrement())
+  purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id])
+  purchaseOrderId Int
+  product         Product       @relation(fields: [productId], references: [id])
+  productId       Int
+  quantity        Int
+  unitPrice       Float
+  subtotal        Float
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+}
+
+model PurchaseReceipt {
+  id              Int           @id @default(autoincrement())
+  receiptNumber   String        @unique // REC-2024-001
+  purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id])
+  purchaseOrderId Int
+  invoiceNumber   String
+  invoiceDate     DateTime
+  invoiceAmount   Float
+  receivedBy      String
+  user            User          @relation(fields: [receivedBy], references: [id])
+  receivedAt      DateTime      @default(now())
+  notes           String?
+  isPartial       Boolean       @default(false)
+
+  // Relaciones
+  items     PurchaseReceiptItem[]
+  movements InventoryMovement[]
+}
+
+model PurchaseReceiptItem {
+  id                Int             @id @default(autoincrement())
+  purchaseReceipt   PurchaseReceipt @relation(fields: [purchaseReceiptId], references: [id])
+  purchaseReceiptId Int
+  product           Product         @relation(fields: [productId], references: [id])
+  productId         Int
+  quantityReceived  Int
+  unitPrice         Float
+  subtotal          Float
+  notes             String? // "2 unidades dañadas"
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+}
+
+model Invoice {
+  id            Int           @id @default(autoincrement())
+  invoiceNumber String        @unique
+  supplierId    String
+  supplier      Supplier      @relation(fields: [supplierId], references: [id])
+  invoiceDate   DateTime
+  dueDate       DateTime
+  totalAmount   Float
+  paidAmount    Float         @default(0)
+  status        InvoiceStatus @default(PENDING)
+  notes         String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+}
+
+enum InvoiceStatus {
+  PENDING
+  PARTIAL
+  PAID
+  OVERDUE
+}
+
+model Sale {
+  id          Int         @id @default(autoincrement())
+  saleNumber  String
+  customerId  Int
+  customer    Customer    @relation(fields: [customerId], references: [id])
+  userId      String     
+  user        User        @relation(fields: [userId], references: [id])
+  status      String
+  totalAmount Float
+  notes       String?
+  createdAt   DateTime    @default(now())
+  items       SaleItem[]
+}
+
+model SaleItem {
+  id        Int   @id @default(autoincrement())
+  saleId    Int
+  productId Int
+  quantity  Int
+  unitPrice Float
+  subtotal  Float
+
+  sale    Sale    @relation(fields: [saleId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
+}
+
+model Customer {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String?  @unique
+  phone     String?
+  address   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  sales     Sale[]
 }

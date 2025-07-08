@@ -1,0 +1,402 @@
+# Documentación del Módulo de Movimientos de Inventario (InventoryMovement)
+
+## 1. Descripción General
+
+El módulo de movimientos de inventario es responsable de **registrar y consultar todos los cambios de stock** de los productos. Cada vez que un producto entra o sale del inventario, se debe crear un registro de movimiento. Este módulo es fundamental para la trazabilidad, auditoría y control de inventario.
+
+---
+
+## 2. Tipos de Movimientos
+
+- **Entradas (ENTRY):**
+  - Recepción de compras a proveedores.
+  - Producción interna (fabricación de productos terminados).
+  - Devoluciones de clientes.
+  - Ajustes positivos (corrección de stock, hallazgos, etc.).
+
+- **Salidas (EXIT):**
+  - Ventas a clientes.
+  - Consumo interno (materia prima para producción).
+  - Ajustes negativos (merma, robo, caducidad, etc.).
+  - Transferencias de salida (si hay múltiples almacenes).
+
+Cada movimiento debe registrar:
+- Producto afectado
+- Cantidad
+- Tipo de movimiento (entrada/salida)
+- Motivo o razón
+- Usuario responsable
+- Fecha y hora
+- Referencia (ej: número de orden, factura, etc.)
+
+---
+
+## 3. Procesos que Generan Movimientos
+
+El módulo de movimientos **no debería ser usado directamente por el usuario final**. Más bien, es un módulo de soporte, donde otros procesos generan movimientos automáticamente. Ejemplos de flujos:
+
+- **Recepción de compra:** Se crean movimientos ENTRY por cada producto recibido.
+- **Venta:** Se crean movimientos EXIT por cada producto vendido.
+- **Producción/Receta:** EXIT para insumos, ENTRY para producto terminado.
+- **Ajuste manual:** ENTRY o EXIT según corresponda (solo usuarios autorizados).
+- **Transferencias entre almacenes:** EXIT en origen, ENTRY en destino (si aplica).
+
+---
+
+## 4. Alcance del Módulo
+
+- Registrar todos los movimientos históricos (no se borran, solo se agregan).
+- Permitir consultar movimientos por producto, fecha, tipo, usuario, motivo, referencia, etc.
+- No debe permitir crear movimientos arbitrarios desde la UI, salvo ajustes manuales (y solo por usuarios autorizados).
+- Debe ser usado por otros módulos (compras, ventas, producción, ajustes, transferencias) para registrar los cambios de stock.
+- Los movimientos deben ser inmutables (no se pueden editar ni eliminar).
+
+---
+
+## 5. Modelo Sugerido (Prisma)
+
+```prisma
+model InventoryMovement {
+  id         Int      @id @default(autoincrement())
+  productId  Int
+  product    Product  @relation(fields: [productId], references: [id])
+  type       MovementType // ENTRY o EXIT
+  quantity   Float
+  reason     String
+  reference  String?  // Ej: número de orden, factura, etc.
+  userId     String   // Usuario que realizó el movimiento
+  createdAt  DateTime @default(now())
+}
+
+enum MovementType {
+  ENTRY
+  EXIT
+}
+```
+
+---
+
+## 6. Requerimientos del Módulo
+
+### Funcionales
+- Registrar automáticamente movimientos de inventario desde otros módulos (compras, ventas, producción, ajustes, transferencias).
+- Permitir la creación manual de movimientos solo a usuarios autorizados (ajustes).
+- Consultar movimientos filtrando por producto, tipo, fecha, usuario, motivo, referencia.
+- Auditar el historial de movimientos de cualquier producto.
+- Integración con autenticación para registrar el usuario responsable.
+
+### No funcionales
+- Los movimientos deben ser inmutables (no se pueden editar ni eliminar).
+- El módulo debe ser eficiente para consultas históricas y filtradas.
+- Debe integrarse con los módulos de compras, ventas, producción y ajustes.
+- Soporte para múltiples almacenes (futuro: agregar warehouseId).
+
+---
+
+## 7. Endpoints Sugeridos
+
+### 1. Listar movimientos de inventario
+- **GET** `/inventory/movement?page=1&limit=10&productId=...&type=...&dateFrom=...&dateTo=...`
+  - Filtros opcionales: producto, tipo, fecha, usuario, motivo, referencia
+  - Respuesta paginada
+
+### 2. Ver detalles de un movimiento
+- **GET** `/inventory/movement/:id`
+  - Devuelve todos los detalles del movimiento
+
+### 3. Crear ajuste manual de inventario (solo usuarios autorizados)
+- **POST** `/inventory/movement/adjust`
+  - **Body:**
+    ```json
+    {
+      "productId": 1,
+      "type": "ENTRY",
+      "quantity": 5,
+      "reason": "Ajuste por inventario físico",
+      "reference": "CONTEO-2024-07-01",
+      "userId": "uuid-usuario"
+    }
+    ```
+  - Solo para ajustes manuales, requiere autorización especial
+
+---
+
+## 8. Ejemplo de Respuesta de Consulta
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": 1,
+      "productId": 5,
+      "type": "ENTRY",
+      "quantity": 10,
+      "reason": "Recepción de compra PO-2024-001",
+      "reference": "PO-2024-001",
+      "userId": "admin",
+      "createdAt": "2024-07-01T12:00:00Z"
+    }
+  ],
+  "meta": {
+    "total": 1,
+    "page": 1,
+    "totalPages": 1
+  }
+}
+```
+
+---
+
+## 9. Flujo Típico de Uso
+
+### Flujo 1: Recepción de Compra
+1. Se recibe una orden de compra aprobada
+2. Se crean movimientos ENTRY por cada producto recibido
+
+### Flujo 2: Venta
+1. Se realiza una venta
+2. Se crean movimientos EXIT por cada producto vendido
+
+### Flujo 3: Producción
+1. Se produce un producto terminado
+2. Se crean movimientos EXIT para insumos y ENTRY para producto terminado
+
+### Flujo 4: Ajuste Manual
+1. Usuario autorizado realiza un ajuste
+2. Se crea movimiento ENTRY o EXIT según corresponda
+
+---
+
+## 10. Integración con Otros Módulos
+
+- **Compras:** Al recibir productos, se crean movimientos ENTRY.
+- **Ventas:** Al vender productos, se crean movimientos EXIT.
+- **Producción:** Al fabricar productos, EXIT para insumos y ENTRY para producto terminado.
+- **Ajustes:** Movimientos manuales para corregir stock.
+- **Transferencias:** (futuro) EXIT en almacén origen, ENTRY en almacén destino.
+
+---
+
+## 11. Consideraciones Técnicas y de Seguridad
+
+- Todos los movimientos deben registrar usuario y timestamp.
+- Solo usuarios con permisos pueden hacer ajustes manuales.
+- Los movimientos no pueden ser editados ni eliminados.
+- El stock de producto se actualiza en los procesos de negocio, no directamente en este módulo.
+- El módulo debe ser auditable y trazable.
+
+---
+
+## 12. Consideraciones Futuras
+
+- Soporte para múltiples almacenes (warehouseId).
+- Soporte para transferencias entre almacenes (movimientos de tipo TRANSFER).
+- Motivos de movimiento parametrizables.
+- Reportes de auditoría y trazabilidad.
+
+---
+
+## 13. Ejemplo de Uso de la API
+
+### 1. Listar movimientos
+**Método:** GET  
+**Ruta:** `/inventory/movement?page=1&limit=10&productId=5&type=ENTRY&dateFrom=2024-07-01&dateTo=2024-07-31`
+**Headers:**
+```
+Content-Type: application/json
+Authorization: Bearer <token>
+```
+**Respuesta:**
+```json
+{
+  "success": true,
+  "data": [ /* array de movimientos */ ],
+  "meta": { "total": 2, "page": 1, "totalPages": 1 }
+}
+```
+
+### 2. Crear ajuste manual
+**Método:** POST  
+**Ruta:** `/inventory/movement/adjust`
+**Headers:**
+```
+Content-Type: application/json
+Authorization: Bearer <token>
+```
+**Body:**
+```json
+{
+  "productId": 1,
+  "type": "EXIT",
+  "quantity": 2,
+  "reason": "Merma por caducidad",
+  "reference": "AJUSTE-2024-07-01",
+  "userId": "uuid-usuario"
+}
+```
+**Respuesta:**
+```json
+{
+  "success": true,
+  "data": { /* movimiento creado */ }
+}
+```
+
+---
+
+## 14. Notas de Implementación
+
+- Integrar con autenticación para registrar el usuario responsable.
+- Validar que solo usuarios autorizados puedan crear ajustes manuales.
+- Los movimientos generados por otros módulos deben ser automáticos y no editables.
+- El stock de producto debe actualizarse en los procesos de negocio (compra, venta, producción, ajuste), no directamente en este módulo.
+- Considerar paginación y filtros eficientes para grandes volúmenes de datos.
+
+---
+
+## 15. Política de Auditoría
+
+- Todos los movimientos deben registrar usuario y timestamp.
+- El historial de movimientos debe estar disponible para consulta y auditoría.
+- No se permite la eliminación ni edición de movimientos.
+
+--- 
+
+## 16. Endpoints Implementados
+
+### 1. Listar movimientos de inventario
+- **GET** `/inventory/movement`
+- **Descripción:** Lista movimientos de inventario con filtros opcionales y paginación.
+- **Query params:**
+  - `page` (opcional, default: 1)
+  - `limit` (opcional, default: 10)
+  - `productId` (opcional)
+  - `type` (opcional, 'ENTRY' | 'EXIT')
+  - `userId` (opcional)
+  - `reason` (opcional, búsqueda parcial)
+  - `reference` (opcional, búsqueda parcial)
+  - `dateFrom` (opcional, ISO string)
+  - `dateTo` (opcional, ISO string)
+
+**Ejemplo de request:**
+```
+GET /inventory/movement?page=1&limit=10&type=ENTRY&dateFrom=2024-07-01&dateTo=2024-07-31
+Authorization: Bearer <token>
+```
+
+**Ejemplo de response:**
+```json
+{
+  "success": true,
+  "data": [ /* array de movimientos */ ],
+  "meta": { "total": 2, "page": 1, "totalPages": 1 }
+}
+```
+
+---
+
+### 2. Obtener detalles de un movimiento
+- **GET** `/inventory/movement/:id`
+- **Descripción:** Devuelve los detalles de un movimiento de inventario por su ID.
+
+**Ejemplo de request:**
+```
+GET /inventory/movement/1
+Authorization: Bearer <token>
+```
+
+**Ejemplo de response:**
+```json
+{
+  "success": true,
+  "data": {
+    "id": 1,
+    "productId": 5,
+    "type": "ENTRY",
+    "quantity": 10,
+    "reason": "Recepción de compra PO-2024-001",
+    "reference": "PO-2024-001",
+    "userId": "admin",
+    "createdAt": "2024-07-01T12:00:00Z",
+    "product": { "id": 5, "name": "Harina" }
+  },
+  "meta": { "total": 1, "page": 1, "totalPages": 1 }
+}
+```
+
+---
+
+### 3. Crear ajuste manual de inventario
+- **POST** `/inventory/movement/adjust`
+- **Descripción:** Crea un movimiento manual de inventario (ajuste), solo para usuarios autenticados y autorizados.
+- **Body:**
+```json
+{
+  "productId": 1,
+  "type": "EXIT",
+  "quantity": 2,
+  "reason": "Merma por caducidad",
+  "reference": "AJUSTE-2024-07-01",
+  "userId": "uuid-usuario"
+}
+```
+- **Headers:**
+```
+Content-Type: application/json
+Authorization: Bearer <token>
+```
+
+**Ejemplo de response:**
+```json
+{
+  "success": true,
+  "data": {
+    "id": 10,
+    "productId": 1,
+    "type": "EXIT",
+    "quantity": 2,
+    "reason": "Merma por caducidad",
+    "reference": "AJUSTE-2024-07-01",
+    "userId": "uuid-usuario",
+    "createdAt": "2024-07-02T10:00:00Z",
+    "product": { "id": 1, "name": "Harina" }
+  }
+}
+```
+
+---
+
+## 17. Estructura de los DTOs
+
+### CreateMovementDto
+- `productId` (number, requerido): ID del producto
+- `type` ("ENTRY" | "EXIT", requerido): Tipo de movimiento
+- `quantity` (number, requerido): Cantidad
+- `reason` (string, requerido): Motivo del movimiento
+- `reference` (string, opcional): Referencia externa (ej: número de orden)
+- `userId` (string, requerido): Usuario responsable
+
+### GetMovementsQueryDto
+- `page`, `limit`, `productId`, `type`, `userId`, `reason`, `reference`, `dateFrom`, `dateTo` (todos opcionales, para filtros y paginación)
+
+---
+
+## 18. Flujo de uso
+
+1. **Listar movimientos:**
+   - `GET /inventory/movement` con filtros según necesidad.
+2. **Ver detalles:**
+   - `GET /inventory/movement/:id` para ver un movimiento específico.
+3. **Crear ajuste manual:**
+   - `POST /inventory/movement/adjust` con los datos del movimiento, solo usuarios autenticados.
+
+---
+
+## 19. Notas de Seguridad y Validación
+- El endpoint de ajuste manual requiere autenticación y autorización.
+- Los DTOs validan tipos y campos requeridos.
+- El stock se actualiza automáticamente al crear un movimiento manual.
+- Los movimientos generados por otros módulos (compras, ventas, producción) deben seguir el mismo modelo, pero se crean automáticamente desde esos procesos.
+
+--- 
