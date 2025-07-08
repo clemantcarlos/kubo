@@ -10,7 +10,6 @@ import { Toaster } from "sonner";
 import LogInPage from "@/modules/auth/pages/LogIng";
 // DASHBOARD
 import DashboardLayout from "@/modules/dashboard/components/dashboard-layout";
-import Home from "@/modules/dashboard/pages/Home";
 // RESTAURANT
 import Tables from "@/modules/restaurant/page/Tables";
 import Table from "@/modules/restaurant/page/Table";
@@ -24,15 +23,28 @@ import { SpinnerProvider } from "./context/Spinner";
 import "@/index.css";
 import Spinner from "./components/global/loaders/Spinner";
 import { GlobalProvider } from "./context/Global";
+// POS
+import POSHome from "@/modules/pos/pages/Home";
+import POSLayout from "./modules/pos/components/pos-layout";
 
 const router = createBrowserRouter([
   {
     path: "/",
     element: (
       <ProtectedRoute>
-        <Home />
+        <POSLayout />
       </ProtectedRoute>
     ),
+    children: [
+      {
+        index: true,
+        element: <POSHome />,
+        handle: {
+          crumbModule: "POS",
+          crumb: "Home",
+        },
+      }
+    ]
   },
   {
     path: "/dashboard",
@@ -72,7 +84,7 @@ const router = createBrowserRouter([
       },
       {
         path: "waiters",
-        element: <Home />,
+        element: <POSHome />,
         handle: {
           crumbModule: "restaurante",
           crumb: "Mesoneros",
