@@ -15,6 +15,8 @@ import Tables from "@/modules/restaurant/page/Tables";
 import Table from "@/modules/restaurant/page/Table";
 // INVENTORY
 import Products from "@/modules/Inventory/pages/Products";
+import PurchaseOrders from "./modules/Inventory/pages/PurchaseOrders";
+import Suppliers from "./modules/Inventory/pages/Suppliers";
 //CONTEXT
 import { ThemeProvider } from "@/components/theme/ThemeProvider";
 import { UserProvider } from "@/context/user";
@@ -43,8 +45,8 @@ const router = createBrowserRouter([
           crumbModule: "POS",
           crumb: "Home",
         },
-      }
-    ]
+      },
+    ],
   },
   {
     path: "/dashboard",
@@ -68,9 +70,9 @@ const router = createBrowserRouter([
             index: true,
             element: <Tables />,
             handle: {
-            crumbModule: "Restaurante",
-            crumb: "Mesas",
-          },
+              crumbModule: "Restaurante",
+              crumb: "Mesas",
+            },
           },
           {
             path: ":id",
@@ -91,7 +93,7 @@ const router = createBrowserRouter([
         },
       },
       {
-        path: 'products',
+        path: "products",
         children: [
           {
             index: true,
@@ -101,8 +103,34 @@ const router = createBrowserRouter([
               crumb: "Productos",
             },
           },
-        ]
-      }
+        ],
+      },
+      {
+        path: "purchase-orders",
+        children: [
+          {
+            index: true,
+            element: <PurchaseOrders />,
+            handle: {
+              crumbModule: "Inventario",
+              crumb: "Ordenes de Compra",
+            },
+          },
+        ],
+      },
+      {
+        path: "suppliers",
+        children: [
+          {
+            index: true,
+            element: <Suppliers />,
+            handle: {
+              crumbModule: "Inventario",
+              crumb: "Proveedores",
+            },
+          },
+        ],
+      },
     ],
   },
   {
@@ -118,7 +146,7 @@ createRoot(document.getElementById("root")!).render(
         <GlobalProvider>
           <RouterProvider router={router} />
         </GlobalProvider>
-        <Toaster theme="system"/>
+        <Toaster theme="system" />
         <ModeToggle />
         <Spinner />
       </SpinnerProvider>

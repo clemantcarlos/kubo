@@ -17,13 +17,7 @@ export async function getQuery<T>(
   signal?: AbortSignal
 ): Promise<GetResponse<T>> {
   const response = await fetch(url, { signal });
-
   const json = await response.json();
-
-  if (!json.success) {
-    throw new Error('Error en la respuesta del servidor');
-  }
-
   return json as GetResponse<T>;
 }
 export async function postQueryJson<T,Body>(

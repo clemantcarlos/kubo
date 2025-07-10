@@ -21,8 +21,7 @@ const getStorageUnits = async () => {
 
 export default function useProductForm(id?: number) {
   // HOOKS
-  const { product } = useGlobal();
-  const { addProduct, updateProduct, getProduct } = product.methods;
+  const { addProduct, updateProduct, getProduct } = useGlobal();
   // STATES
   const [categories, setCategories] = useState([]);
   const [storageUnits, setStorageUnits] = useState([]);

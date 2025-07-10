@@ -1,11 +1,11 @@
-import { ChevronRight } from "lucide-react";
-import { SearchForm } from "../components/search-form";
-import { VersionSwitcher } from "../components/version-switcher";
+import { ChevronRight } from 'lucide-react';
+import { SearchForm } from '../components/search-form';
+import { VersionSwitcher } from '../components/version-switcher';
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+} from '@/components/ui/collapsible';
 import {
   Sidebar,
   SidebarContent,
@@ -17,11 +17,11 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
-} from "@/components/ui/sidebar";
-import { Link, useMatches } from "react-router";
+} from '@/components/ui/sidebar';
+import { Link, useMatches } from 'react-router';
 
 const data = {
-  versions: ["1.0.1", "1.1.0-alpha", "2.0.0-beta1"],
+  versions: ['1.0.1', '1.1.0-alpha', '2.0.0-beta1'],
   navMain: [
     {
       title: 'POS',
@@ -46,26 +46,34 @@ const data = {
       ],
     },
     {
-      title: "Restaurante",
-      url: "#",
+      title: 'Restaurante',
+      url: '#',
       items: [
         {
-          title: "Mesas",
-          url: "tables",
+          title: 'Mesas',
+          url: 'tables',
         },
         {
-          title: "Mesoneros",
-          url: "waiters",
+          title: 'Mesoneros',
+          url: 'waiters',
         },
       ],
     },
     {
-      title: "Inventario",
-      url: "#",
+      title: 'Inventario',
+      url: '#',
       items: [
         {
-          title: "Productos",
-          url: "products",
+          title: 'Productos',
+          url: 'products',
+        },
+        {
+          title: 'Compras',
+          url: 'purchase-order',
+        },
+        {
+          title: 'Proveedores',
+          url: 'suppliers',
         },
       ],
     },
@@ -88,7 +96,7 @@ export function DashboardSidebar({
     ,
   }));
   return (
-    <Sidebar {...props} className="z-[9999]">
+    <Sidebar {...props} className='z-[9999]'>
       <SidebarHeader>
         <VersionSwitcher
           versions={data.versions}
@@ -96,23 +104,23 @@ export function DashboardSidebar({
         />
         <SearchForm />
       </SidebarHeader>
-      <SidebarContent className="gap-0">
+      <SidebarContent className='gap-0'>
         {/* We create a collapsible SidebarGroup for each parent. */}
         {data.navMain.map((item) => (
           <Collapsible
             key={item.title}
             title={item.title}
             defaultOpen
-            className="group/collapsible"
+            className='group/collapsible'
           >
             <SidebarGroup>
               <SidebarGroupLabel
                 asChild
-                className="group/label text-sm text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                className='group/label text-sm text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
               >
                 <CollapsibleTrigger>
-                  {item.title}{" "}
-                  <ChevronRight className="ml-auto transition-transform group-data-[state=open]/collapsible:rotate-90" />
+                  {item.title}{' '}
+                  <ChevronRight className='ml-auto transition-transform group-data-[state=open]/collapsible:rotate-90' />
                 </CollapsibleTrigger>
               </SidebarGroupLabel>
               <CollapsibleContent>
@@ -122,7 +130,7 @@ export function DashboardSidebar({
                       <SidebarMenuItem key={item.title}>
                         <SidebarMenuButton asChild 
                           isActive={item.title.toLowerCase() === crumb[0].crumb.toLowerCase()}>
-                          <Link to={item.url} className="ms-2">{item.title} </Link>
+                          <Link to={item.url} className='ms-2'>{item.title} </Link>
                         </SidebarMenuButton>
                       </SidebarMenuItem>
                     ))}

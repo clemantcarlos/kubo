@@ -7,26 +7,25 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import useGlobal from "@/hooks/useGlobal";
-import { columns } from "../components/product-columns";
+import { columns } from "../components/purchaseOrder-columns";
 
 export default function useProduct() {
   // HOOKS
-  const { product } = useGlobal()
-  const { methods, value } = product;
-  //STATES 
+  const { getProducts, product } = useGlobal();
+  //STATES
   const [page, setPage] = useState<number>(1);
   const [sorting, setSorting] = useState<SortingState>([]);
-  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [searchQuery, setSearchQuery] = useState<string>("");
   // REFS
   const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   useEffect(() => {
-    methods.getProducts(page, searchQuery)
-  }, [methods, page, searchQuery]);  
-  
+    getProducts(page, searchQuery);
+  }, [getProducts, page, searchQuery]);
+
   // TABLE
   const table = useReactTable({
-    data: value.data || [],
+    data: product.data || [],
     columns,
     getCoreRowModel: getCoreRowModel(),
     // pagination
@@ -59,8 +58,8 @@ export default function useProduct() {
   return {
     table,
     handleInputChange,
-    data: value.data || [],
-    totalPages: value.meta?.totalPages || 0,
+    data: product.data || [],
+    totalPages: product?.meta?.totalPages || 0,
     page,
     setPage,
   };
