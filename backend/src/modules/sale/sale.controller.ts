@@ -1,9 +1,17 @@
-import { Controller, Get, Query, Param, Post, Body, UseGuards } from '@nestjs/common';
+import { 
+  Controller, 
+  Get, 
+  Query, 
+  Param, 
+  Post, 
+  Body, 
+  UseGuards 
+} from '@nestjs/common';
 import { SaleService } from './sale.service';
 import { CreateSaleDto, GetSalesQueryDto } from './dto/sale.dto';
 import { AtGuard } from '@/modules/auth/common/guards/at.guard';
 
-@Controller('inventory/sale')
+@Controller('sale')
 export class SaleController {
   constructor(private readonly saleService: SaleService) {}
 

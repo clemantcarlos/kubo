@@ -59,3 +59,35 @@ export class SupplierDto {
   createdAt: Date;
   updatedAt: Date;
 } 
+export class ResponseSupplierDto {
+  @IsString()
+  @IsNotEmpty()
+  id:        string;
+  
+  @IsString()
+  @IsNotEmpty()
+  name:      string;
+
+  @IsEmail()
+  @IsOptional()
+  email:     string | null;
+
+  @IsString()
+  @IsOptional()
+  phone:     string | null;
+
+  @IsString()
+  @IsOptional()
+  address:   string | null;
+ 
+  @IsString()
+  @IsOptional()
+  taxId:     string | null;
+ 
+  @IsBoolean()
+  isActive:  boolean;
+ 
+  @IsDate()
+  createdAt: Date;
+  updatedAt: Date;
+}
