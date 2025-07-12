@@ -176,7 +176,7 @@ export class ProductController {
   @Public()
   @Delete(":id")
   @HttpCode(HttpStatus.OK)
-  async deleteProduct(@Param("id") id: number): Promise<Product> {
+  async deleteProduct(@Param("id") id: number): Promise<ResponseDto<ResponseProductDto>> {
     const productExist = await this.productService.getProduct(id);
     if (!productExist) {
       throw new NotFoundException("Product not found");

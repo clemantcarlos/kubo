@@ -272,14 +272,19 @@ export class ProductService {
       throw new BadRequestException(e);
     }
   }
-  async deleteProduct(id: number): Promise<Product> {
+  async deleteProduct(id: number): Promise<ResponseDto<ResponseProductDto>> {
     const parsedId = Number(id);
     try {
-      return await this.prisma.product.delete({
+      const deletedProduct = await this.prisma.product.delete({
         where: {
           id: parsedId,
         },
+        select: productSelect,
       });
+      return {
+        success: true,
+        data: deletedProduct,
+      };
     } catch (e) {
       throw new BadRequestException(e);
     }

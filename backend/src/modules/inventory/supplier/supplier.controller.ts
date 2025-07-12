@@ -1,4 +1,16 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Post, Query } from '@nestjs/common';
+import { 
+  Body, 
+  Controller, 
+  Delete, 
+  Get, 
+  HttpCode, 
+  HttpStatus, 
+  NotFoundException, 
+  Param, 
+  Post, 
+  Put, 
+  Query 
+} from '@nestjs/common';
 import { SupplierService } from './supplier.service';
 import { CreateSupplierDto, ResponseSupplierDto } from './dto/supplier.dto';
 import { Public } from '@/modules/auth/common/decorators/public.decorator';
@@ -26,4 +38,40 @@ export class SupplierController {
   ): Promise<GetResponse<ResponseSupplierDto[]>> {
     return this.supplierService.getSuppliers(page, limit, search);
   }
+  @Public()
+  @Get(":id")
+  @HttpCode(HttpStatus.OK)
+  async getSupplier(
+    @Param("id") id: string
+  ): Promise<GetResponse<ResponseSupplierDto>> {
+    return this.supplierService.getSupplier(id);
+  }
+
+  @Public()
+  @Put(":id")
+  @HttpCode(HttpStatus.OK)
+  async updateSupplier(
+    @Param("id") id: string,
+    @Body() supplier: CreateSupplierDto
+  ): Promise<ResponseDto<ResponseSupplierDto>> {
+    const supplierExist = await this.supplierService.getSupplier(id);
+    if (!supplierExist) {
+      throw new NotFoundException("Supplier not found");
+    }
+    return this.supplierService.updateSupplier(id, supplier);
+  }
+
+  @Public()
+  @Delete(":id")
+  @HttpCode(HttpStatus.OK)
+  async deleteSupplier(
+    @Param("id") id: string
+  ): Promise<ResponseDto<ResponseSupplierDto>> {
+    const supplierExist = await this.supplierService.getSupplier(id);
+    if (!supplierExist) {
+      throw new NotFoundException("Supplier not found");
+    }
+    return this.supplierService.deleteSupplier(id);
+  }
+
 }
