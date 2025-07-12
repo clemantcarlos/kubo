@@ -1,62 +1,124 @@
 // UI
-import { Textarea } from "@/components/ui/textarea"
+import { Textarea } from "@/components/ui/textarea";
 import {
   Form,
-  FormControl,  
+  FormControl,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
+} from "@/components/ui/form";
 // UI
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-// COMPONENTS
-import { PriceInputFormField } from "@/components/global/forms/PriceInput"
-import { QuantityInputFormField } from "@/components/global/forms/QuantityInput"
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 // HOOKS
-import useSupplierForm from "../hooks/useSupplierForm"
-// ICONS
-import { PlusIcon } from "lucide-react"
+import useSupplierForm from "../hooks/useSupplierForm";
 // INTERFACES
-import { ProductCategory } from "../interfaces/productCategory"
-import { StorageUnit } from "../interfaces/storageUnit"
-import { DialogProps } from "../interfaces/dialogProps"
+import { DialogProps } from "../interfaces/dialogProps";
 
-export function ProductForm({ actionType, id }: DialogProps) {  
-  const { 
-    form, 
-    formValues, 
-    categories, 
-    storageUnits, 
-    onCreate, 
-    onUpdate, 
-  } = useSupplierForm(id)
+export function ProductForm({ actionType, id }: DialogProps) {
+  const { form, formValues, onCreate, onUpdate } =
+    useSupplierForm(id);
 
   return (
     <Form {...form}>
-      <form id = 'product-form'
-        onSubmit = {  
+      <form
+        id="supplier-form"
+        onSubmit={
           actionType === "update" && id
-          ? form.handleSubmit(onUpdate) 
-          : form.handleSubmit(onCreate)
-        } 
-        className="grid grid-cols-2 auto-rows-min gap-x-4 gap-y-10">
-      <Button 
-        className="col-span-2" 
-        type="submit"
-        >
-        {actionType === "create" ? "Agregar" : "Editar"}
+            ? form.handleSubmit(onUpdate)
+            : form.handleSubmit(onCreate)
+        }
+        className="grid grid-cols-2 auto-rows-min gap-x-4 gap-y-10"
+      >
+        <FormField
+          control={form.control}
+          name="name"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Nombre</FormLabel>
+              <FormControl>
+                <Input
+                  className={
+                    form.getValues("name") !== formValues.name && id
+                      ? "border-amber-500 focus-visible:ring-amber-500"
+                      : ""
+                  }
+                  placeholder="Ej: Distribuidora..."
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="phone"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Telefóno</FormLabel>
+              <FormControl>
+                <Input
+                  className={
+                    form.getValues("phone") !== formValues.phone && id
+                      ? "border-amber-500 focus-visible:ring-amber-500"
+                      : ""
+                  }
+                  placeholder="Ej: 4125555555"
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="email"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Correo Electronico</FormLabel>
+              <FormControl>
+                <Input
+                  className={
+                    form.getValues("email") !== formValues.email && id
+                      ? "border-amber-500 focus-visible:ring-amber-500"
+                      : ""
+                  }
+                  placeholder="Ej: distribuidora@gmail.com"
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="address"
+          render={({ field }) => (
+            <FormItem className="col-span-2">
+              <FormLabel>Dirección</FormLabel>
+              <FormControl>
+                <Textarea 
+                  className = {
+                    form.getValues("address") !== formValues.address && id ?
+                    "resize-none border-amber-500 focus-visible:ring-amber-500"
+                    : "resize-none"
+                  }
+                  placeholder="Ej: Calle 123, 123 123"
+                  {...field} 
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <Button className="col-span-2" type="submit">
+          {actionType === "create" ? "Agregar" : "Editar"}
         </Button>
       </form>
     </Form>
-  )
+  );
 }
-

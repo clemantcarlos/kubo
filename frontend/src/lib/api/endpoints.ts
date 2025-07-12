@@ -17,8 +17,7 @@ export const API_ENDPOINTS = {
   SUPPLIERS: {
     BASE: `${API_INVENTORY_URL}/supplier`,
     BASE_GET: (page: number, limit: number, search?: string) => `${API_INVENTORY_URL}/supplier?page=${page}&limit=${limit}&search=${search}`, 
-    BY_ID: (id: number) => `${API_INVENTORY_URL}/supplier/${id}`,
-    UPDATE_STOCK: (id: number) => `${API_INVENTORY_URL}/supplier/${id}/stock`,
+    BY_ID: (id: string) => `${API_INVENTORY_URL}/supplier/${id}`,
   },
   
   // Autenticación

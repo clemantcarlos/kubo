@@ -13,6 +13,7 @@ export default function useProduct() {
   // HOOKS
   const { product } = useGlobal()
   const { methods, value } = product;
+  const { getProducts } = methods;
   //STATES 
   const [page, setPage] = useState<number>(1);
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -21,8 +22,8 @@ export default function useProduct() {
   const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   useEffect(() => {
-    methods.getProducts(page, searchQuery)
-  }, [methods, page, searchQuery]);  
+    getProducts(page, searchQuery)
+  }, [getProducts, page, searchQuery]);  
   
   // TABLE
   const table = useReactTable({

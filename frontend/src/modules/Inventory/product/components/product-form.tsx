@@ -69,38 +69,37 @@ export function ProductForm({ actionType, id }: ProductDialogProps) {
             </FormItem>
           )}
         />
-          <FormField
-          
-          control={form.control}
-          name="categoryId"
-          render={({ field }) => (
-            <FormItem className="flex flex-wrap gap-2">
-              <FormLabel className="w-full">Categoría</FormLabel>
-              <Select  onValueChange={field.onChange} value={field.value}>
-                <FormControl>
-                  <SelectTrigger className="flex-1">
-                    <SelectValue
-                      className = {
-                        form.getValues("categoryId") !== formValues.categoryId && id ?
-                        "border-amber-500 focus-visible:ring-amber-500"
-                        : ""
-                      }
-                      placeholder="Selecciona una categoría"
-                    />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {categories.length > 0 && categories?.map((category: ProductCategory) => (
-                    <SelectItem key={category.id} value={String(category.id)}>{category.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Button  variant = 'outline' className="col-auto" onClick={(e)=>e.preventDefault()}>
-                <PlusIcon />
-              </Button>
-              <FormMessage  className="col-span-2"/>
-            </FormItem>
-          )}
+        <FormField
+        control={form.control}
+        name="categoryId"
+        render={({ field }) => (
+          <FormItem className="flex flex-wrap gap-2">
+            <FormLabel className="w-full">Categoría</FormLabel>
+            <Select  onValueChange={field.onChange} value={field.value}>
+              <FormControl>
+                <SelectTrigger className="flex-1">
+                  <SelectValue
+                    className = {
+                      form.getValues("categoryId") !== formValues.categoryId && id ?
+                      "border-amber-500 focus-visible:ring-amber-500"
+                      : ""
+                    }
+                    placeholder="Selecciona una categoría"
+                  />
+                </SelectTrigger>
+              </FormControl>
+              <SelectContent>
+                {categories.length > 0 && categories?.map((category: ProductCategory) => (
+                  <SelectItem key={category.id} value={String(category.id)}>{category.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Button  variant = 'outline' className="col-auto" onClick={(e)=>e.preventDefault()}>
+              <PlusIcon />
+            </Button>
+            <FormMessage  className="col-span-2"/>
+          </FormItem>
+        )}
         />
        <FormField
         

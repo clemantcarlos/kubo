@@ -3,18 +3,15 @@ import { useForm } from "react-hook-form";
 // ZOD
 import { zodResolver } from "@hookform/resolvers/zod";
 import { formSchema, type SupplierFormSchema } from "../schema/supplier.schema";
-// ENDPOINTS
-import { API_ENDPOINTS } from "@/lib/api/endpoints";
 // COMPONENTS
 import useGlobal from "@/hooks/useGlobal";
 
 
-export default function useProductForm(id?: number) {
+export default function useProductForm(id?: string) {
   // HOOKS
-  const { product } = useGlobal();
+  const { supplier } = useGlobal();
+  const { getSupplier, updateSupplier, addSupplier } = supplier.methods;
   // STATES
-  const [categories, setCategories] = useState([]);
-  const [storageUnits, setStorageUnits] = useState([]);
   const [formValues, setFormValues] = useState<SupplierFormSchema>({
     name: "",
     phone: "",
@@ -37,50 +34,50 @@ export default function useProductForm(id?: number) {
     },
   });
 
-  const loadStaticData = useCallback(async () => {
-    try {
-      console.log('loading static data')
-    } catch (error) {
-      console.error("Error loading product data:", error);
-    }
-  }, []);
-
   const loadSupplierData = useCallback(
-    async (id: number) => {
+    async (id: string) => {
       try {
-        console.log("loading supplier data", id);
+        const supplier = await getSupplier(id);
+        if (!supplier) return;
+        const { data } = supplier;
+        setFormValues({
+          ...data,
+        });
+        form.reset({
+          ...data,
+        });
       } catch (error) {
         console.error("Error loading product data:", error);
       }
     },
-    []
+    [form, getSupplier]
   );
 
-  // EFFECTS
   useEffect(() => {
-    loadStaticData();
-  }, [loadStaticData]);
-
-  useEffect(() => {
-    if (id && categories.length > 0 && storageUnits.length > 0) {
+    if (id) {
       loadSupplierData(id);
     }
-  }, [id, categories, storageUnits, loadSupplierData]);
+  }, [id, loadSupplierData]);
 
   // HANDLERS
   async function onCreate() {
-    
+    const apiData = {
+      ...form.getValues(),
+    }
+    addSupplier(apiData);
   }
 
   const onUpdate = () => {
-    
+    if (!id) return;
+    const apiData = {
+      ...form.getValues(),
+    }
+    updateSupplier(id, apiData);
   };
 
   return {
     form,
     formValues,
-    categories,
-    storageUnits,
     onCreate,
     onUpdate,
   };

@@ -42,7 +42,7 @@ export const columns: ColumnDef<Supplier>[] = [
     header: () => <div className="text-right">Acciones</div>,
     cell: ({ row }) => {
       const supplierId = row.original.id
-      return <SupplierActionColumn id={Number(supplierId)} />;
+      return <SupplierActionColumn id={supplierId} />; 
     },
   },
 ];

@@ -3,7 +3,9 @@ import { useCallback, useReducer } from "react";
 import { initialState, productReducer } from "@/reducers/product";
 // schemas
 import { ProductFormSchema } from "@/modules/Inventory/product/schema/product.schema";
+// TYPES
 import { Product } from "@/modules/Inventory/product/types/product";
+// UTILS
 import {
   deleteQuery,
   getQuery,
@@ -12,6 +14,7 @@ import {
   putQueryJson,
 } from "@/lib/api/queries";
 import { API_ENDPOINTS } from "@/lib/api/endpoints";
+// COMPONENTS
 import { toast } from "sonner";
 
 export default function useProductState() {

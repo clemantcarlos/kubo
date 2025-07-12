@@ -9,12 +9,12 @@ import { API_ENDPOINTS } from "@/lib/api/endpoints";
 import useGlobal from "@/hooks/useGlobal";
 
 const getCategories = async () => {
-  const response = await fetch(API_ENDPOINTS.PRODUCT_CATEGORIES.BASE);
+  const response = await fetch(API_ENDPOINTS.PRODUCTS.CATEGORIES);
   const data = await response.json();
   return data;
 };
 const getStorageUnits = async () => {
-  const response = await fetch(API_ENDPOINTS.PRODUCT_STORAGE_UNITS.BASE);
+  const response = await fetch(API_ENDPOINTS.PRODUCTS.STORAGE_UNITS);
   const data = await response.json();
   return data;
 };

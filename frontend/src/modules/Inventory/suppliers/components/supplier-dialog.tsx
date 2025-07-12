@@ -22,20 +22,20 @@ export function SupplierDialog({ actionType, id }: DialogProps) {
           <Button variant="outline">
             <PlusIcon />
           </Button>
-          : <span>Editar producto</span>
+          : <span>Editar Proveedor</span>
         }
       </DialogTrigger>
       <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle className="text-xl">
             {actionType === "create"
-              ? "Crear un nuevo producto"
-              : "Editar producto"}
+              ? "Crear un nuevo proveedor"
+              : "Editar proveedor"}
           </DialogTitle>
           <DialogDescription>
             {actionType === "create"
-              ? "Ingresa los datos del producto"
-              : "Edita los datos del producto"}
+              ? "Ingresa los datos del proveedor"
+              : "Edita los datos del proveedor"}
           </DialogDescription>
         </DialogHeader>
         <div>

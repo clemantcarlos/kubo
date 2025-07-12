@@ -22,12 +22,11 @@ export type GlobalContextType = {
   supplier: {
     value: GetResponse<Supplier[]>;
     methods: {
-      // TODO: FIX | VOID TYPE WHEN THE METHOD IS FINISHED
-      getSupplier: (id: number) => Promise<GetResponse<Supplier> | undefined | void >;
+      getSupplier: (id: string) => Promise<GetResponse<Supplier> | undefined>;
       getSuppliers: (page: number, search?: string) => Promise<void>;
       addSupplier: (supplier: SupplierFormSchema) => Promise<void>;
-      updateSupplier: (id: number, supplier: SupplierFormSchema) => Promise<void>;
-      deleteSupplier: (id: number) => Promise<void>;
+      updateSupplier: (id: string, supplier: SupplierFormSchema) => Promise<void>;
+      deleteSupplier: (id: string) => Promise<void>;
     };
   }
 };

@@ -7,7 +7,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
@@ -15,7 +14,7 @@ import { Button } from "@/components/ui/button";
 import { MoreHorizontal } from "lucide-react";
 import useGlobal from "@/hooks/useGlobal";
 
-export default function SupplierActionColumn({ id }: { id: number }) {
+export default function SupplierActionColumn({ id }: { id: string }) {
   const { supplier } = useGlobal();
   const { deleteSupplier } = supplier.methods;
   const deleteConfirmHandler = async () => {
@@ -31,12 +30,8 @@ export default function SupplierActionColumn({ id }: { id: number }) {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          {/* <DropdownMenuItem disabled = {true} onSelect={(e) => e.preventDefault()}>
-            <Product id={Number(id)} />
-          </DropdownMenuItem> */}
-          <DropdownMenuSeparator />
           <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-            <SupplierDialog actionType="update" id={Number(id)} />
+            <SupplierDialog actionType="update" id={ id } />
           </DropdownMenuItem>
           <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
             <Alert
