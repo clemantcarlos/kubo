@@ -108,7 +108,7 @@ export default function POSHome() {
               Ningun producto seleccionado
             </div>
           }
-          {billPrducts?.map((product) => (<></>))}
+          {/* {billPrducts?.map((product) => (<></>))} */}
         </div>
         <footer>
           <div style={{ boxShadow:'0 -8px 16px -4px rgba(0,0,0,0.10)' }}>
