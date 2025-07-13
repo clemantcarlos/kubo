@@ -2,9 +2,9 @@ import { useCallback, useReducer } from "react";
 //  REDUCERS
 import { initialState, supplierReducer } from "@/reducers/supplier";
 // SCHEMAS
-import { SupplierFormSchema } from "@/modules/Inventory/suppliers/schema/supplier.schema";
+import { SupplierFormSchema } from "@/modules/Inventory/supplier/schema/supplier.schema"
 // TYPES
-import { Supplier } from "@/modules/Inventory/suppliers/types/supplier.type";
+import { Supplier } from "@/modules/Inventory/supplier/types/supplier.type";
 // UTILS
 import { 
   deleteQuery,
