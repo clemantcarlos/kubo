@@ -10,12 +10,12 @@ import {
   TableRow,
 } from "@/components/ui/table";
 // COMPONENTS
-import { SupplierDialog } from "../suppliers/components/supplier-dialog";
+import { SupplierDialog } from "../supplier/components/supplier-dialog";
 // HOOKS
-import useSupplier from "../suppliers/hooks/useSupplier";
+import useSupplier from "../supplier/hooks/useSupplier";
 // TABLE
 import { flexRender } from "@tanstack/react-table";
-import { columns } from "../suppliers/components/supplier-columns";
+import { columns } from "../supplier/components/supplier-columns";
 
 export default function Supplier() {
   const { table, handleInputChange, page, setPage, totalPages } = useSupplier();

@@ -1,7 +1,7 @@
 // UTILS
 import { GetResponse } from "@/lib/api/queries"
 // TYPES
-import { Supplier } from "@/modules/Inventory/suppliers/types/supplier.type"
+import { Supplier } from '@/modules/Inventory/supplier/types/supplier.type'
 
 export const initialState: GetResponse<Supplier[]> = {
   success: true,

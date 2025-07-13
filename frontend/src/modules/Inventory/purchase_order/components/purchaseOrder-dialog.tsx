@@ -10,11 +10,11 @@ import { Button } from "@/components/ui/button";
 // ICONS
 import { PlusIcon } from "lucide-react";
 // FORM
-import { ProductForm } from "./purchaseOrder-form";
+import { PurchaseOrderForm } from "./purchaseOrder-form";
 // INTERFACES
-import { ProductDialogProps } from "../interfaces/producDialogProps";
+import { DialogProps } from "../interfaces/dialogProps";
 
-export function ProductDialog({ actionType, id }: ProductDialogProps) {
+export function PurchaseOrderDialog({ actionType, id }: DialogProps) {
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -22,24 +22,24 @@ export function ProductDialog({ actionType, id }: ProductDialogProps) {
           <Button variant="outline">
             <PlusIcon />
           </Button>
-          : <span>Editar producto</span>
+          : <span>Editar Proveedor</span>
         }
       </DialogTrigger>
       <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle className="text-xl">
             {actionType === "create"
-              ? "Crear un nuevo producto"
-              : "Editar producto"}
+              ? "Crear un nuevo proveedor"
+              : "Editar proveedor"}
           </DialogTitle>
           <DialogDescription>
             {actionType === "create"
-              ? "Ingresa los datos del producto"
-              : "Edita los datos del producto"}
+              ? "Ingresa los datos del proveedor"
+              : "Edita los datos del proveedor"}
           </DialogDescription>
         </DialogHeader>
         <div>
-          <ProductForm actionType={actionType} id={id}/>
+          <PurchaseOrderForm actionType={actionType} id={id}/>
         </div>
       </DialogContent>
     </Dialog>

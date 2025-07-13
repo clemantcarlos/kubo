@@ -2,10 +2,12 @@ import { useCallback, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 // ZOD
 import { zodResolver } from "@hookform/resolvers/zod";
-import { formSchema, type SupplierFormSchema } from "../schema/supplier.schema";
+import {
+  formSchema,
+  type SupplierFormSchema,
+} from "../schema/purchaseOrder.schema";
 // COMPONENTS
 import useGlobal from "@/hooks/useGlobal";
-
 
 export default function useProductForm(id?: string) {
   // HOOKS
@@ -63,7 +65,7 @@ export default function useProductForm(id?: string) {
   async function onCreate() {
     const apiData = {
       ...form.getValues(),
-    }
+    };
     addSupplier(apiData);
   }
 
@@ -71,7 +73,7 @@ export default function useProductForm(id?: string) {
     if (!id) return;
     const apiData = {
       ...form.getValues(),
-    }
+    };
     updateSupplier(id, apiData);
   };
 

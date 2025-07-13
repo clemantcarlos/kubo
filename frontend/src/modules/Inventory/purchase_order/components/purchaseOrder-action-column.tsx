@@ -1,5 +1,5 @@
 // COMPONENTS
-import { ProductDialog } from "./purchaseOrder-dialog";
+import { PurchaseOrderDialog } from "./purchaseOrder-dialog";
 // import Product from '../../pages/Product';
 import Alert from "@/components/global/messages/Alert";
 // UI
@@ -7,7 +7,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
@@ -15,11 +14,11 @@ import { Button } from "@/components/ui/button";
 import { MoreHorizontal } from "lucide-react";
 import useGlobal from "@/hooks/useGlobal";
 
-export default function ProductActionColumn({ id }: { id: number }) {
-  const { deleteProduct } = useGlobal();
-
+export default function SupplierActionColumn({ id }: { id: string }) {
+  const { supplier } = useGlobal();
+  const { deleteSupplier } = supplier.methods;
   const deleteConfirmHandler = async () => {
-    await deleteProduct(id);
+    await deleteSupplier(id);
   };
   return (
     <div className="text-right">
@@ -31,12 +30,8 @@ export default function ProductActionColumn({ id }: { id: number }) {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          {/* <DropdownMenuItem disabled = {true} onSelect={(e) => e.preventDefault()}>
-            <Product id={Number(id)} />
-          </DropdownMenuItem> */}
-          <DropdownMenuSeparator />
           <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-            <ProductDialog actionType="update" id={Number(id)} />
+            <PurchaseOrderDialog actionType="update" id={id} />
           </DropdownMenuItem>
           <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
             <Alert
