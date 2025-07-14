@@ -1,33 +1,54 @@
 import { createRoot } from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router";
+import { Suspense, lazy } from "react";
 // PROTECTED ROUTES
 import ProtectedRoute from "@/components/auth/components/ProtectedRoute";
 // UI
 import { ModeToggle } from "@/components/theme/ModeToggle";
 import { Toaster } from "sonner";
-// ROUTER COMPONENTS
-// AUTH
-import LogInPage from "@/modules/auth/pages/LogIng";
-// DASHBOARD
-import DashboardLayout from "@/modules/dashboard/components/dashboard-layout";
-// RESTAURANT
-import Tables from "@/modules/restaurant/page/Tables";
-import Table from "@/modules/restaurant/page/Table";
-// INVENTORY
-import Products from "@/modules/Inventory/pages/Products";
-import PurchaseOrders from "./modules/Inventory/pages/PurchaseOrders";
-import Suppliers from "./modules/Inventory/pages/Suppliers";
 //CONTEXT
 import { ThemeProvider } from "@/components/theme/ThemeProvider";
 import { UserProvider } from "@/context/user";
 import { SpinnerProvider } from "./context/Spinner";
+import { GlobalProvider } from "./context/Global";
+// COMPONENTS
+import Spinner from "./components/global/loaders/Spinner";
 // CSS
 import "@/index.css";
-import Spinner from "./components/global/loaders/Spinner";
-import { GlobalProvider } from "./context/Global";
+
+// LAZY IMPORTS
+// AUTH
+const LogInPage = lazy(() => 
+  import("@/modules/auth/pages/LogIng").then(module => ({default: module.default}))
+)
+// LAYOUTS
+const POSLayout = lazy(() => 
+  import("./modules/pos/components/pos-layout").then(module => ({default: module.default}))
+);
+const DashboardLayout = lazy(() => 
+  import("@/modules/dashboard/components/dashboard-layout").then(module => ({default: module.default}))
+);
+// TABLES
+const Tables = lazy(() => 
+  import("@/modules/restaurant/page/Tables").then(module => ({default: module.default}))
+);
+const Table = lazy(() => 
+  import("@/modules/restaurant/page/Table").then(module => ({default: module.default}))
+);
+// INVENTORY
+const Products = lazy(() => 
+  import("@/modules/Inventory/pages/Products").then(module => ({default: module.default}))
+);
+const Suppliers = lazy(
+  () => import("./modules/Inventory/pages/Suppliers").then(module => ({default: module.default}))
+);
+const PurchaseOrders = lazy(() => 
+  import("./modules/Inventory/pages/PurchaseOrders").then(module => ({default: module.default}))
+);
 // POS
-import POSHome from "@/modules/pos/pages/Home";
-import POSLayout from "./modules/pos/components/pos-layout";
+const POSHome = lazy(() => 
+  import("@/modules/pos/pages/Home").then(module => ({default: module.default}))
+);
 
 const router = createBrowserRouter([
   {
@@ -144,7 +165,9 @@ createRoot(document.getElementById("root")!).render(
     <UserProvider>
       <SpinnerProvider>
         <GlobalProvider>
-          <RouterProvider router={router} />
+          <Suspense fallback={<Spinner />}>
+            <RouterProvider router={router} />
+          </Suspense>
         </GlobalProvider>
         <Toaster theme="system" />
         <ModeToggle />

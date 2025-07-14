@@ -50,7 +50,7 @@ export const PriceInputFormField = ({
                     prefix="$"
                     decimalScale={2}
                     fixedDecimalScale
-                    allowNegative={false}z
+                    allowNegative={false}
                     customInput={Input}
                     getInputRef={ref}
                     onValueChange={(values) => {

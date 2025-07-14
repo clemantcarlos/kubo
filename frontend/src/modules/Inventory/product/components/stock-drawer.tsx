@@ -24,7 +24,8 @@ import useGlobal from "@/hooks/useGlobal"
 type Props = Pick<Product, 'storageUnit'| 'stock' | 'id'>
 
 export function StockDrawer({id, storageUnit, stock}: Props ) {
-  const { updateStock } = useGlobal()
+  const { product } = useGlobal()
+  const { updateStock } = product.methods
   // DESTRUCTURING STORAGE UNIT PARAM
   const { unit, name } = storageUnit
   // REFS

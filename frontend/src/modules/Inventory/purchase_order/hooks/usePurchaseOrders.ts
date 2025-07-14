@@ -7,7 +7,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import useGlobal from "@/hooks/useGlobal";
-import { columns } from "../components/purchaseOrders-columns";
+import { columns } from "../components/purchaseOrder-columns";
 
 export default function useProduct() {
   // HOOKS
