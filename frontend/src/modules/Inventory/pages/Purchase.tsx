@@ -10,15 +10,16 @@ import {
   TableRow,
 } from "@/components/ui/table";
 // COMPONENTS
-import { PurchaseOrderDialog } from "../purchase_order/components/purchaseOrder-dialog";
+import { PurchaseDialog } from "../purchase/components/purchase-dialog";
 // HOOKS
-import usePurchaseOrder from "../purchase_order/hooks/usePurchaseOrder";
+import usePurchase from "../purchase/hooks/usePurchase";
 // TABLE
 import { flexRender } from "@tanstack/react-table";
-import { columns } from "../purchase_order/components/purchaseOrder-columns";
+import { columns } from "../purchase/components/purchase-columns";
 
-export default function PurchaseOrders() {
-  const { table, handleInputChange, page, setPage, totalPages } = usePurchaseOrder();
+export default function Purchases() {
+  const { table, handleInputChange, page, setPage, totalPages } =
+    usePurchase();
   return (
     <div className="container mx-auto p-10">
       <div className="flex items-center justify-between py-4 gap-4">
@@ -27,7 +28,7 @@ export default function PurchaseOrders() {
           onChange={handleInputChange}
           className="max-w-sm"
         />
-        <PurchaseOrderDialog actionType="create" />
+        <PurchaseDialog actionType="create" />
       </div>
       <div className="rounded-md border">
         <Table>

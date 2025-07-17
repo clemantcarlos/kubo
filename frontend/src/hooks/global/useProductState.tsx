@@ -103,29 +103,28 @@ export default function useProductState() {
         formData,
         controller.signal
       );
-      productDispatch({
-        type: "UPDATE_PRODUCT",
-        payload: updatedProduct.data,
-      });
-      toast.success("Producto actualizado exitosamente");
-    } catch (err) {
-      if (err instanceof Error) {
-        if (err.name !== "AbortError") {
-          toast.error("No se pudo actualizar el producto", {
-            unstyled: true,
-            classNames: {
-              error: "bg-red-500 flex gap-2 rounded-md p-4",
-            },
-          });
-        }
+      if (updatedProduct.success) {
+        productDispatch({
+          type: "UPDATE_PRODUCT",
+          payload: updatedProduct.data,
+        });
+        toast.success("Producto actualizado exitosamente");
       } else {
         toast.error("No se pudo actualizar el producto", {
-          unstyled: true,
+          unstyled: true, 
           classNames: {
-            error: "bg-red-500 flex gap-2 rounded-md p-4",
+            error: "bg-red-500 flex gap-2 rounded-md p-4 text-white",
           },
         });
       }
+    } catch (err) {
+      toast.error("No se pudo actualizar el producto", {
+        unstyled: true,
+        classNames: {
+          error: "bg-red-500 flex gap-2 rounded-md p-4",
+        },
+      });
+      console.log(err)
     } finally {
       controller.abort();
     }
@@ -240,15 +239,24 @@ export default function useProductState() {
     async (id: number) => {
       const controller = new AbortController();
       try {
-        await deleteQuery<Product>(
+        const deletedProduct = await deleteQuery<Product>(
           API_ENDPOINTS.PRODUCTS.BY_ID(id),
           controller.signal
         );
-        productDispatch({
-          type: "DELETE_PRODUCT",
-          payload: { id },
-        });
-        toast.success("Producto eliminado exitosamente");
+        if (deletedProduct.success) {
+          productDispatch({
+            type: "DELETE_PRODUCT",
+            payload: { id },
+          });
+          toast.success("Producto eliminado exitosamente");
+        } else {
+          toast.error("No se pudo eliminar el producto", {
+            unstyled: true,
+            classNames: {
+              error: "bg-red-500 flex gap-2 rounded-md p-4 text-white",
+            },
+          });
+        }
       } catch (err) {
         if (err instanceof Error) {
           if (err.name !== "AbortError") {

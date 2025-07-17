@@ -3,10 +3,10 @@ import { ColumnDef } from "@tanstack/react-table";
 // UI
 import { Badge } from "@/components/ui/badge";
 // TYPES
-import { Supplier } from "../types/purchaseOrder.type";
+import { Purchase } from "../types/purchase.type";
 // ACTION COLUMN
-import SupplierActionColumn from "./purchaseOrder-action-column";
-export const columns: ColumnDef<Supplier>[] = [
+import SupplierActionColumn from "./purchase-action-column";
+export const columns: ColumnDef<Purchase>[] = [
   {
     accessorKey: "name",
     header: "Nombre",

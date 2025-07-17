@@ -12,13 +12,13 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 // HOOKS
-import usePurchaseOrderForm from "../hooks/usePurchaseOrderForm";
+import usePurchaseForm from "../hooks/usePurchaseForm";
 // INTERFACES
 import { DialogProps } from "../interfaces/dialogProps";
 
-export function PurchaseOrderForm({ actionType, id }: DialogProps) {
+export function PurchaseForm({ actionType, id }: DialogProps) {
   const { form, formValues, onCreate, onUpdate } =
-    usePurchaseOrderForm(id);
+    usePurchaseForm(id);
 
   return (
     <Form {...form}>
@@ -41,7 +41,7 @@ export function PurchaseOrderForm({ actionType, id }: DialogProps) {
                 <Input
                   className={
                     form.getValues("name") !== formValues.name && id
-                      ? "border-amber-500 focus-visible:ring-amber-500"
+                      ? "b-amber-500 focus-visible:ring-amber-500"
                       : ""
                   }
                   placeholder="Ej: Distribuidora..."
@@ -62,7 +62,7 @@ export function PurchaseOrderForm({ actionType, id }: DialogProps) {
                 <Input
                   className={
                     form.getValues("phone") !== formValues.phone && id
-                      ? "border-amber-500 focus-visible:ring-amber-500"
+                      ? "b-amber-500 focus-visible:ring-amber-500"
                       : ""
                   }
                   placeholder="Ej: 4125555555"
@@ -83,7 +83,7 @@ export function PurchaseOrderForm({ actionType, id }: DialogProps) {
                 <Input
                   className={
                     form.getValues("email") !== formValues.email && id
-                      ? "border-amber-500 focus-visible:ring-amber-500"
+                      ? "b-amber-500 focus-visible:ring-amber-500"
                       : ""
                   }
                   placeholder="Ej: distribuidora@gmail.com"
@@ -104,7 +104,7 @@ export function PurchaseOrderForm({ actionType, id }: DialogProps) {
                 <Textarea 
                   className = {
                     form.getValues("address") !== formValues.address && id ?
-                    "resize-none border-amber-500 focus-visible:ring-amber-500"
+                    "resize-none b-amber-500 focus-visible:ring-amber-500"
                     : "resize-none"
                   }
                   placeholder="Ej: Calle 123, 123 123"

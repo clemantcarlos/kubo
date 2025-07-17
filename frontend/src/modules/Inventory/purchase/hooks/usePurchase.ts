@@ -7,22 +7,22 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import useGlobal from "@/hooks/useGlobal";
-import { columns } from "../components/purchaseOrder-columns";
+import { columns } from "../components/purchase-columns";
 
 export default function useProduct() {
   // HOOKS
   const { supplier } = useGlobal();
   const { value, methods } = supplier;
-  const { getSuppliers  } = methods;
+  const { getSuppliers } = methods;
   //STATES
   const [page, setPage] = useState<number>(1);
   const [sorting, setSorting] = useState<SortingState>([]);
-  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [searchQuery, setSearchQuery] = useState<string>("");
   // REFS
   const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   useEffect(() => {
-    getSuppliers(page, searchQuery)
+    getSuppliers(page, searchQuery);
   }, [getSuppliers, page, searchQuery]);
 
   // TABLE

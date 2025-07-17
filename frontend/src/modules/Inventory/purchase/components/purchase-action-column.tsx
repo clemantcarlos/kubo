@@ -1,5 +1,5 @@
 // COMPONENTS
-import { PurchaseOrderDialog } from "./purchaseOrder-dialog";
+import { PurchaseDialog } from "./purchase-dialog";
 // import Product from '../../pages/Product';
 import Alert from "@/components/global/messages/Alert";
 // UI
@@ -31,7 +31,7 @@ export default function SupplierActionColumn({ id }: { id: string }) {
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-            <PurchaseOrderDialog actionType="update" id={id} />
+            <PurchaseDialog actionType="update" id={id} />
           </DropdownMenuItem>
           <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
             <Alert

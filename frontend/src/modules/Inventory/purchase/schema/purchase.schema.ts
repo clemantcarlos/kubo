@@ -22,4 +22,4 @@ export const formSchema = z.object({
   isActive: z.boolean(),
 })
 
-export type SupplierFormSchema = z.infer<typeof formSchema>
+export type PurchaseFormSchema = z.infer<typeof formSchema>

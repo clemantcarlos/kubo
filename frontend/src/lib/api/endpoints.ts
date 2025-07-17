@@ -9,15 +9,20 @@ export const API_ENDPOINTS = {
     BY_ID: (id: number) => `${API_INVENTORY_URL}/product/${id}`,
     UPDATE_STOCK: (id: number) => `${API_INVENTORY_URL}/product/${id}/stock`,
     CATEGORIES: `${API_INVENTORY_URL}/product/category`,
-    CATEGORIES_BY_ID: (id: string) => `${API_BASE_URL}/product/category/${id}`,
-    STORAGE_UNITS: `${API_BASE_URL}/product/storage-unit`,
-    STORAGE_UNITS_BY_ID: (id: string) => `${API_BASE_URL}/product/storage-unit/${id}`,
+    CATEGORIES_BY_ID: (id: string) => `${API_INVENTORY_URL}/product/category/${id}`,
+    STORAGE_UNITS: `${API_INVENTORY_URL}/product/storage-unit`,
+    STORAGE_UNITS_BY_ID: (id: string) => `${API_INVENTORY_URL}/product/storage-unit/${id}`,
   },
   // Proveedores
   SUPPLIERS: {
     BASE: `${API_INVENTORY_URL}/supplier`,
     BASE_GET: (page: number, limit: number, search?: string) => `${API_INVENTORY_URL}/supplier?page=${page}&limit=${limit}&search=${search}`, 
     BY_ID: (id: string) => `${API_INVENTORY_URL}/supplier/${id}`,
+  },
+  PURCHASES: {
+    BASE_ORDER: `${API_INVENTORY_URL}/purchase/order`,
+    BASE_GET_ORDER: (page: number, limit: number, search?: string) => `${API_INVENTORY_URL}/purchase/order?page=${page}&limit=${limit}&search=${search}`, 
+    ORDER_BY_ID: (id: number) => `${API_INVENTORY_URL}/purchase/order/${id}`,
   },
   
   // Autenticación

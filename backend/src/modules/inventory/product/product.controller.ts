@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -44,7 +45,65 @@ import {
 @Controller("inventory/product")
 export class ProductController {
   constructor(private readonly productService: ProductService) {}
+  
+  // --- CATEGORIES ---
+  @Public()
+  @Get('category')
+  @HttpCode(HttpStatus.OK)
+  async getAllCategories(): Promise<ProductCategory[]> {
+    return this.productService.getAllCategories();
+  }
+  @Public()
+  @Get("category/:id")
+  @HttpCode(HttpStatus.FOUND)
+  async getCategoryById(@Param("id") id: number): Promise<ProductCategory> {
+    return this.productService.getByIdCategory(id);
+  }
+  @Public()
+  @Post('category')
+  @HttpCode(HttpStatus.CREATED)
+  @UsePipes(new ValidationPipe())
+  async createCategory(@Body() product: ProductCategoryDto) {
+    return this.productService.createCategory(product);
+  }
+  @Public()
+  @Put("category/:id")
+  @HttpCode(HttpStatus.OK)
+  async updateCategory(
+    @Param("id") id: number,
+    @Body() product: ProductCategory
+  ): Promise<ProductCategory> {
+    const categoryExist = await this.productService.getByIdCategory(id);
 
+    if (!categoryExist) {
+      throw new NotFoundException("Category not found");
+    }
+    return this.productService.updateCategory(id, product);
+  }
+  @Public()
+  @Delete("category/:id")
+  @HttpCode(HttpStatus.OK)
+  async deleteCategory(@Param("id") id: number): Promise<{ message: string }> {
+    const categoryExist = await this.productService.getByIdCategory(id);
+
+    if (!categoryExist) {
+      throw new NotFoundException("Category not found");
+    }
+    return this.productService.deleteCategory(id);
+  }
+  // --- STORAGE UNITS --- 
+  @Public()
+  @Get('storage-unit')
+  async getAllProductStorageUnit(): Promise<GetProductStorageUnitDto[]> {
+    return this.productService.getAllStorageUnits();
+  }
+  @Public()
+  @Post('storage-unit')
+  async createProductStorageUnit(
+    @Body() productStorageUnit: ProductStorageUnitDto
+  ): Promise<ProductStorageUnit> {
+    return this.productService.createStorageUnit(productStorageUnit);
+  }
   @Public()
   @Get()
   @HttpCode(HttpStatus.OK)
@@ -55,16 +114,14 @@ export class ProductController {
   ): Promise<GetResponse<ResponseProductDto[]>> {
     return this.productService.getProducts(page, limit, search);
   }
-
   @Public()
   @Get(":id")
   @HttpCode(HttpStatus.OK)
   async getProduct(
     @Param("id") id: number
-  ): Promise<GetResponse<ResponseProductDto>> {
+  ) {
     return this.productService.getProduct(id);
   }
-
   @Public()
   @Post()
   @HttpCode(HttpStatus.CREATED)
@@ -72,7 +129,7 @@ export class ProductController {
   @UseInterceptors(
     FileInterceptor("image", {
       storage: diskStorage({
-        destination: "./uploads", // guarda localmente por ahora
+        destination: "./public/img", // guarda localmente por ahora
         filename: (req, file, cb) => {
           const uniqueSuffix =
             Date.now() + "-" + Math.round(Math.random() * 1e9);
@@ -82,42 +139,31 @@ export class ProductController {
           );
         },
       }),
+      fileFilter: (req, file, cb) => {
+        if (
+          file.mimetype === 'image/webp' 
+          || extname(file.originalname).toLocaleLowerCase() === '.webp'
+        ) {
+          cb(null, true);
+        } else {
+          cb(new BadRequestException('Only image/webp is allowed'), false);
+        }
+      },
     })
   )
   async createProduct(
     @UploadedFile() file: Express.Multer.File,
     @Body() product: ProductDto
   ): Promise<ResponseDto<ResponseProductDto>> {
-    if (file) {
-      const buffer =
-        file.buffer ??
-        (await import("fs/promises").then((fs) => fs.readFile(file.path)));
-      const hash = createHash("sha256").update(buffer).digest("hex");
-      const imageUrl = `/uploads/${file.filename}`;
-
-      return this.productService.createProduct({
-        ...product,
-        imageUrl,
-        imageHash: hash,
-      });
-    }
-
-    const { image, ...productWithoutImage } = product;
-
-    return this.productService.createProduct({
-      ...productWithoutImage,
-      imageUrl: null,
-      imageHash: null,
-    });
+    return this.productService.createProduct(product, file);
   }
-
   @Public()
   @Put(":id")
   @HttpCode(HttpStatus.OK)
   @UseInterceptors(
     FileInterceptor("image", {
       storage: diskStorage({
-        destination: "./uploads", // guarda localmente por ahora
+        destination: "./public/img", // guarda localmente por ahora
         filename: (req, file, cb) => {
           const uniqueSuffix =
             Date.now() + "-" + Math.round(Math.random() * 1e9);
@@ -127,37 +173,30 @@ export class ProductController {
           );
         },
       }),
+      fileFilter: (req, file, cb) => {
+        if (
+          file.mimetype === 'image/webp' 
+          || extname(file.originalname).toLocaleLowerCase() === '.webp'
+        ) {
+          cb(null, true);
+        } else {
+          cb(new BadRequestException('Only image/webp is allowed'), false);
+        }
+      },
     })
   )
   async updateProduct(
     @Param("id") id: number,
     @Body() product: ProductDto,
     @UploadedFile() file: Express.Multer.File
-  ): Promise<ResponseDto<ResponseProductDto>> {
+  )
+  : Promise<ResponseDto<ResponseProductDto>> 
+  {
     const productExist = await this.productService.getProduct(id);
     if (!productExist) {
       throw new NotFoundException("Product not found");
     }
-    if (file) {
-      const buffer =
-        file.buffer ??
-        (await import("fs/promises").then((fs) => fs.readFile(file.path)));
-      const hash = createHash("sha256").update(buffer).digest("hex");
-      const imageUrl = `/uploads/${file.filename}`;
-
-      return this.productService.updateProduct(id, {
-        ...product,
-        imageUrl,
-        imageHash: hash,
-      });
-    }
-    const { image, ...productWithoutImage } = product;
-
-    return this.productService.updateProduct(id, {
-      ...productWithoutImage,
-      imageUrl: null,
-      imageHash: null,
-    });
+    return this.productService.updateProduct(id, product, file);
   }
   @Public()
   @Put(":id/stock")
@@ -172,7 +211,6 @@ export class ProductController {
     }
     return this.productService.updateStock(id, stock);
   }
-
   @Public()
   @Delete(":id")
   @HttpCode(HttpStatus.OK)
@@ -182,68 +220,5 @@ export class ProductController {
       throw new NotFoundException("Product not found");
     }
     return this.productService.deleteProduct(id);
-  }
-
-  // CATEGORIES
-  @Public()
-  @Get('category')
-  @HttpCode(HttpStatus.OK)
-  async getAll(): Promise<ProductCategory[]> {
-    return this.productService.getAllCategories();
-  }
-  @Public()
-  @Get("category/:id")
-  @HttpCode(HttpStatus.FOUND)
-  async getById(@Param("id") id: number): Promise<ProductCategory> {
-    return this.productService.getByIdCategory(id);
-  }
-
-  @Public()
-  @Post('category')
-  @HttpCode(HttpStatus.CREATED)
-  @UsePipes(new ValidationPipe())
-  async create(@Body() product: ProductCategoryDto) {
-    return this.productService.createCategory(product);
-  }
-
-  @Public()
-  @Put("category/:id")
-  @HttpCode(HttpStatus.OK)
-  async update(
-    @Param("id") id: number,
-    @Body() product: ProductCategory
-  ): Promise<ProductCategory> {
-    const categoryExist = await this.productService.getByIdCategory(id);
-
-    if (!categoryExist) {
-      throw new NotFoundException("Category not found");
-    }
-    return this.productService.updateCategory(id, product);
-  }
-
-  @Public()
-  @Delete("category/:id")
-  @HttpCode(HttpStatus.OK)
-  async delete(@Param("id") id: number): Promise<{ message: string }> {
-    const categoryExist = await this.productService.getByIdCategory(id);
-
-    if (!categoryExist) {
-      throw new NotFoundException("Category not found");
-    }
-    return this.productService.deleteCategory(id);
-  }
-  // STORAGE UNITS
-  @Public()
-  @Get('storage-unit')
-  async getAllProductStorageUnit(): Promise<GetProductStorageUnitDto[]> {
-    return this.productService.getAllStorageUnits();
-  }
-
-  @Public()
-  @Post('storage-unit')
-  async createProductStorageUnit(
-    @Body() productStorageUnit: ProductStorageUnitDto
-  ): Promise<ProductStorageUnit> {
-    return this.productService.createStorageUnit(productStorageUnit);
   }
 }

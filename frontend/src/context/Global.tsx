@@ -7,17 +7,20 @@ import useSupplierState from "@/hooks/global/useSupplierState";
 function useGlobalReducer() {
   const productState = useProductState();
   const supplierState = useSupplierState();
+  const purchaseState = useSupplierState();
 
   return {
     productState,
-    supplierState
+    supplierState,
+    purchaseState,
   }
 }
 
 export const GlobalProvider = ({ children }: PropsWithChildren) => {
   const {
     productState,
-    supplierState,  
+    supplierState,
+    purchaseState,  
   } = useGlobalReducer();
 
   return (
@@ -25,6 +28,7 @@ export const GlobalProvider = ({ children }: PropsWithChildren) => {
       value={{
         product: productState,
         supplier: supplierState,
+        purchase: purchaseState,
       }}
     >
       {children}

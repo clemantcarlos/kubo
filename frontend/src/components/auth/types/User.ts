@@ -1,4 +1,4 @@
-export interface Welcome {
+export interface UserWithTokens {
   tokens: Tokens;
   user:   User;
 }

@@ -10,11 +10,11 @@ import { Button } from "@/components/ui/button";
 // ICONS
 import { PlusIcon } from "lucide-react";
 // FORM
-import { PurchaseOrderForm } from "./purchaseOrder-form";
+import { PurchaseForm } from "./purchase-form";
 // INTERFACES
 import { DialogProps } from "../interfaces/dialogProps";
 
-export function PurchaseOrderDialog({ actionType, id }: DialogProps) {
+export function PurchaseDialog({ actionType, id }: DialogProps) {
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -39,7 +39,7 @@ export function PurchaseOrderDialog({ actionType, id }: DialogProps) {
           </DialogDescription>
         </DialogHeader>
         <div>
-          <PurchaseOrderForm actionType={actionType} id={id}/>
+          <PurchaseForm actionType={actionType} id={id}/>
         </div>
       </DialogContent>
     </Dialog>

@@ -4,7 +4,12 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 // PRISMA
-import { Prisma, Product, ProductCategory, ProductStorageUnit } from "@prisma/client";
+import {
+  Prisma,
+  Product,
+  ProductCategory,
+  ProductStorageUnit,
+} from "@prisma/client";
 import { PrismaService } from "src/prisma/prisma.service";
 // DTO
 import {
@@ -18,7 +23,11 @@ import { GetResponse, ResponseDto } from "@/interfaces/getResponse";
 import { promises as fs } from "fs";
 import { productSelect } from "./utils/const.prisma.query";
 import { ProductCategoryDto } from "./dto/product-category.dto";
-import { GetProductStorageUnitDto, ProductStorageUnitDto } from "./dto/product-storage-unit.dto";
+import {
+  GetProductStorageUnitDto,
+  ProductStorageUnitDto,
+} from "./dto/product-storage-unit.dto";
+import { createImage } from "./utils/imageHandlers";
 
 @Injectable()
 export class ProductService {
@@ -146,26 +155,24 @@ export class ProductService {
   }
 
   async createProduct(
-    product: ProductDto & { imageUrl?: string } & { imageHash?: string }
+    product: ProductDto,
+    file: Express.Multer.File
   ): Promise<ResponseDto<ResponseProductDto>> {
-    try {
-      if (product.imageHash) {
-        const existing = await this.prisma.product.findUnique({
-          where: { imageHash: product.imageHash },
-        });
+    const { name, description, stock, price, storageUnitId, categoryId } =
+      product;
 
-        if (existing) {
-          await fs.unlink("." + product.imageUrl); // ❌ elimina la imagen
-          throw new BadRequestException("Esta imagen ya fue subida.");
-        }
-      }
+    try {
+      const { imageUrl, imageHash } = await createImage(file); // ❌ crea la imagen
       const newProduct = await this.prisma.product.create({
         data: {
-          ...product,
-          price: Number(product.price),
-          stock: Number(product.stock),
-          categoryId: Number(product.categoryId),
-          storageUnitId: Number(product.storageUnitId),
+          name,
+          description,
+          stock,
+          price,
+          storageUnit: { connect: { id: storageUnitId } },
+          category: { connect: { id: categoryId } },
+          imageHash,
+          imageUrl,
         },
         select: productSelect,
       });
@@ -185,37 +192,62 @@ export class ProductService {
         }
         throw new BadRequestException(e);
       }
-      console.log(e);
       throw new BadRequestException(e);
     }
   }
 
   async updateProduct(
     id: number,
-    product: ProductDto & { imageUrl?: string } & { imageHash?: string }
+    product: ProductDto,
+    file?: Express.Multer.File
   ): Promise<ResponseDto<ResponseProductDto>> {
     const parsedId = Number(id);
-    try {
-      if (product.imageHash) {
-        const existing = await this.prisma.product.findUnique({
-          where: { imageHash: product.imageHash },
-        });
+    const { name, description, stock, price, storageUnitId, categoryId } =
+      product;
 
-        if (existing) {
-          await fs.unlink("." + product.imageUrl); // ❌ elimina la imagen
-          throw new BadRequestException("Esta imagen ya fue subida.");
+    try {
+      if (file !== undefined && file !== null) {
+        const existing = await this.prisma.product.findUnique({
+          where: { id: parsedId },
+          select: { imageUrl: true },
+        });
+        // CREATE FILE
+        try {
+          await fs.unlink("." + existing.imageUrl); // ❌ elimina la imagen
+        } catch {
+          console.log("The previous image was not found");
         }
+
+        const { imageUrl, imageHash } = await createImage(file); // ❌ crea la imagen
+        const updatedProduct = await this.prisma.product.update({
+          where: { id: parsedId },
+          data: {
+            name,
+            description,
+            stock,
+            price,
+            storageUnit: { connect: { id: storageUnitId } },
+            category: { connect: { id: categoryId } },
+            imageHash,
+            imageUrl,
+          },
+          select: productSelect,
+        });
+        return {
+          success: true,
+          data: updatedProduct,
+        };
       }
+
       const updatedProduct = await this.prisma.product.update({
-        where: {
-          id: parsedId,
-        },
+        where: { id: parsedId },
         data: {
-          ...product,
-          price: Number(product.price),
-          stock: Number(product.stock),
-          categoryId: Number(product.categoryId),
-          storageUnitId: Number(product.storageUnitId),
+          name,
+          description,
+          stock,
+          price,
+          storageUnit: { connect: { id: storageUnitId } },
+          category: { connect: { id: categoryId } },
         },
         select: productSelect,
       });
@@ -286,7 +318,14 @@ export class ProductService {
         data: deletedProduct,
       };
     } catch (e) {
-      throw new BadRequestException(e);
+      if (e instanceof Prisma.PrismaClientKnownRequestError) {
+        if (e.code === "P2003") {
+          throw new BadRequestException(
+            "This product is used in other places and cannot be deleted"
+          );
+        }
+        throw new BadRequestException(e);
+      }
     }
   }
   // CATEGORIES
@@ -363,41 +402,41 @@ export class ProductService {
   }
   // STORAGE UNITS
   async getAllStorageUnits(): Promise<GetProductStorageUnitDto[]> {
-      try {
-        return await this.prisma.productStorageUnit.findMany({
-          select: {
-            id: true,
-            name: true,
-            unit: true,
-          },
-        });
-      } catch (e) {
+    try {
+      return await this.prisma.productStorageUnit.findMany({
+        select: {
+          id: true,
+          name: true,
+          unit: true,
+        },
+      });
+    } catch (e) {
+      throw new BadRequestException(e);
+    }
+  }
+  async createStorageUnit(
+    productStorageUnit: ProductStorageUnitDto
+  ): Promise<ProductStorageUnit> {
+    try {
+      const newProductStorageUnit = await this.prisma.productStorageUnit.create(
+        {
+          data: productStorageUnit,
+        }
+      );
+      return newProductStorageUnit;
+    } catch (e) {
+      if (e instanceof Prisma.PrismaClientKnownRequestError) {
+        if (e.code === "P2002") {
+          throw new BadRequestException("Unit already exists");
+        }
+        if (e.code === "P2003") {
+          throw new BadRequestException(
+            "One relationship with unit is missing " + e.meta.field_name
+          );
+        }
         throw new BadRequestException(e);
       }
+      throw new BadRequestException(e.message);
     }
-    async createStorageUnit(
-      productStorageUnit: ProductStorageUnitDto
-    ): Promise<ProductStorageUnit> {
-      try {
-        const newProductStorageUnit = await this.prisma.productStorageUnit.create(
-          {
-            data: productStorageUnit,
-          }
-        );
-        return newProductStorageUnit;
-      } catch (e) {
-        if (e instanceof Prisma.PrismaClientKnownRequestError) {
-          if (e.code === "P2002") {
-            throw new BadRequestException("Unit already exists");
-          }
-          if (e.code === "P2003") {
-            throw new BadRequestException(
-              "One relationship with unit is missing " + e.meta.field_name
-            );
-          }
-          throw new BadRequestException(e);
-        }
-        throw new BadRequestException(e.message);
-      }
-    }
+  }
 }

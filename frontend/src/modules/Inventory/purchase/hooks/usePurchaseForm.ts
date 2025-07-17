@@ -4,8 +4,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   formSchema,
-  type SupplierFormSchema,
-} from "../schema/purchaseOrder.schema";
+  type PurchaseFormSchema,
+} from "../schema/purchase.schema";
 // COMPONENTS
 import useGlobal from "@/hooks/useGlobal";
 
@@ -14,7 +14,7 @@ export default function useProductForm(id?: string) {
   const { supplier } = useGlobal();
   const { getSupplier, updateSupplier, addSupplier } = supplier.methods;
   // STATES
-  const [formValues, setFormValues] = useState<SupplierFormSchema>({
+  const [formValues, setFormValues] = useState<PurchaseFormSchema>({
     name: "",
     phone: "",
     email: "",
@@ -24,7 +24,7 @@ export default function useProductForm(id?: string) {
   });
 
   // FORM
-  const form = useForm<SupplierFormSchema>({
+  const form = useForm<PurchaseFormSchema>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",

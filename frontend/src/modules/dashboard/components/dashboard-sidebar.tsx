@@ -69,7 +69,7 @@ const data = {
         },
         {
           title: 'Compras',
-          url: 'purchase-order',
+          url: 'purchase',
         },
         {
           title: 'Proveedores',

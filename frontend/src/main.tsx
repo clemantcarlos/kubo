@@ -42,8 +42,8 @@ const Products = lazy(() =>
 const Suppliers = lazy(
   () => import("./modules/Inventory/pages/Suppliers").then(module => ({default: module.default}))
 );
-const PurchaseOrders = lazy(() => 
-  import("./modules/Inventory/pages/PurchaseOrders").then(module => ({default: module.default}))
+const Purchase = lazy(() => 
+  import("./modules/Inventory/pages/Purchase").then(module => ({default: module.default}))
 );
 // POS
 const POSHome = lazy(() => 
@@ -127,14 +127,14 @@ const router = createBrowserRouter([
         ],
       },
       {
-        path: "purchase-orders",
+        path: "purchase",
         children: [
           {
             index: true,
-            element: <PurchaseOrders />,
+            element: <Purchase />,
             handle: {
               crumbModule: "Inventario",
-              crumb: "Ordenes de Compra",
+              crumb: "Compras",
             },
           },
         ],
