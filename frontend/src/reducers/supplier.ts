@@ -1,7 +1,7 @@
 // UTILS
-import { GetResponse } from "@/lib/api/queries"
+import { GetResponse } from "@/services/queries";
 // TYPES
-import { Supplier } from '@/modules/Inventory/supplier/types/supplier.type'
+import { Supplier } from "@/modules/inventory/supplier/types/supplier.type";
 
 export const initialState: GetResponse<Supplier[]> = {
   success: true,
@@ -11,21 +11,21 @@ export const initialState: GetResponse<Supplier[]> = {
     page: 1,
     totalPages: 1,
   },
-}
+};
 
-type SupplierAction =  
-  | { type: 'ADD_SUPPLIER', payload: Supplier} 
-  | { type: 'UPDATE_SUPPLIER', payload: Supplier}
-  | { type: 'GET_SUPPLIERS', payload: GetResponse<Supplier[]> }
-  | { type: 'DELETE_SUPPLIER', payload: { id: string } }  
+type SupplierAction =
+  | { type: "ADD_SUPPLIER"; payload: Supplier }
+  | { type: "UPDATE_SUPPLIER"; payload: Supplier }
+  | { type: "GET_SUPPLIERS"; payload: GetResponse<Supplier[]> }
+  | { type: "DELETE_SUPPLIER"; payload: { id: string } };
 
 export function supplierReducer(
-  state: GetResponse<Supplier[]>, 
+  state: GetResponse<Supplier[]>,
   action: SupplierAction
 ): GetResponse<Supplier[]> {
-  const { payload: actionPayload, type: actionType} = action 
+  const { payload: actionPayload, type: actionType } = action;
   switch (actionType) {
-    case 'ADD_SUPPLIER': {
+    case "ADD_SUPPLIER": {
       const newState: GetResponse<Supplier[]> = {
         ...state,
         data: [actionPayload, ...state.data],
@@ -33,32 +33,32 @@ export function supplierReducer(
           ...state.meta,
           total: (state.meta?.total || 0) + 1,
           page: state.meta?.page || 1,
-          totalPages: state.meta?.totalPages || 1
-        }
-      }
-      return newState
+          totalPages: state.meta?.totalPages || 1,
+        },
+      };
+      return newState;
     }
-    case 'UPDATE_SUPPLIER': {
+    case "UPDATE_SUPPLIER": {
       const newState: GetResponse<Supplier[]> = {
         ...state,
-        data: state.data.map(product => {
+        data: state.data.map((product) => {
           if (product.id === actionPayload.id) {
-            return actionPayload
-          } 
-          return product
+            return actionPayload;
+          }
+          return product;
         }),
-      }
+      };
 
-      return newState
+      return newState;
     }
-    case 'GET_SUPPLIERS': {
+    case "GET_SUPPLIERS": {
       return {
         ...state,
         data: actionPayload.data,
-        meta: actionPayload.meta
-      }
+        meta: actionPayload.meta,
+      };
     }
-    case 'DELETE_SUPPLIER': {
+    case "DELETE_SUPPLIER": {
       const newState = {
         ...state,
         data: state.data.reduce((acc: Supplier[], supplier: Supplier) => {
@@ -69,10 +69,10 @@ export function supplierReducer(
             acc.push(supplier);
           }
           return acc;
-        }, [])
+        }, []),
       };
-      return newState
+      return newState;
     }
   }
-  return state
+  return state;
 }

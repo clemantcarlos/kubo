@@ -1,17 +1,12 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { CreateUserDto, UpdateUserDto } from './dto/user.dto';
-import {
-  Prisma,
-  User,
-  UserIdentityDocumentType,
-  UserRole,
-} from '@prisma/client';
+import { BadRequestException, Injectable } from "@nestjs/common";
+import { PrismaService } from "src/prisma/prisma.service";
+import { CreateUserDto, UpdateUserDto } from "./dto/user.dto";
+import { Prisma, User, IdentityDocumentType, UserRole } from "@prisma/client";
 
-import * as bcrypt from 'bcrypt';
-import { IUsersResponse } from './interfaces/user.interface';
-import { UserRoleDto } from './dto/userRole.dto';
-import { UserIdentityDocumentTypeDto } from './dto/userIdentityDocumentType.dto';
+import * as bcrypt from "bcrypt";
+import { IUsersResponse } from "./interfaces/user.interface";
+import { UserRoleDto } from "./dto/userRole.dto";
+import { IdentityDocumentTypeDto } from "./dto/identityDocumentType.dto";
 
 @Injectable()
 export class UserService {
@@ -167,40 +162,44 @@ export class UserService {
       });
     } catch (e) {
       if (e instanceof Prisma.PrismaClientKnownRequestError) {
-        if (e.code === 'P2002') {
-          throw new BadRequestException('User role already exists');
+        if (e.code === "P2002") {
+          throw new BadRequestException("User role already exists");
         }
         throw new BadRequestException(e);
       }
     }
   }
 
-  async getUserIdentityDocumentTypes(): Promise<UserIdentityDocumentType[]> {
+  async getUserIdentityDocumentTypes(): Promise<IdentityDocumentType[]> {
     try {
-      return await this.prisma.userIdentityDocumentType.findMany();
+      return await this.prisma.identityDocumentType.findMany();
     } catch (e) {
       throw new BadRequestException(e);
     }
   }
 
   async createUserIdentityDocument(
-    userIdentityDocumentType: UserIdentityDocumentTypeDto,
-  ): Promise<UserIdentityDocumentType> {
+    identityDocumentType: IdentityDocumentTypeDto
+  ): Promise<IdentityDocumentType> {
     try {
-      const duplicatedUserIdentityDocumentType = await this.prisma.userIdentityDocumentType.findUnique({
-        where: {
-          name: userIdentityDocumentType.name,
-        },
-      });
-      if (duplicatedUserIdentityDocumentType) throw new BadRequestException('User identity document type already exists');
-      return await this.prisma.userIdentityDocumentType.create({
-        data: userIdentityDocumentType,
+      const duplicatedUserIdentityDocumentType =
+        await this.prisma.identityDocumentType.findUnique({
+          where: {
+            name: identityDocumentType.name,
+          },
+        });
+      if (duplicatedUserIdentityDocumentType)
+        throw new BadRequestException(
+          "User identity document type already exists"
+        );
+      return await this.prisma.identityDocumentType.create({
+        data: identityDocumentType,
       });
     } catch (e) {
       if (e instanceof Prisma.PrismaClientKnownRequestError) {
-        if (e.code === 'P2002') {
+        if (e.code === "P2002") {
           throw new BadRequestException(
-            'User identity document type already exists',
+            "User identity document type already exists"
           );
         }
         throw new BadRequestException(e);

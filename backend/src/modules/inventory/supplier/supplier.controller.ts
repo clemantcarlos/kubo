@@ -35,7 +35,11 @@ export class SupplierController {
     @Query('page') page: number = 1, 
     @Query('limit') limit: number = 10,
     @Query('search') search: string,
-  ): Promise<GetResponse<ResponseSupplierDto[]>> {
+    @Query('all') all: boolean = false,
+  ): Promise<GetResponse<ResponseSupplierDto[] | Pick<ResponseSupplierDto, 'id' | 'name'>[]>> {
+
+    if( all === true) { return this.supplierService.getAllSuppliers(); }
+
     return this.supplierService.getSuppliers(page, limit, search);
   }
   @Public()

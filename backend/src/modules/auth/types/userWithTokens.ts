@@ -1,17 +1,16 @@
 import { User } from '@prisma/client';
 import { Tokens } from './tokens.type';
 
-export type UserPublicInfo = Pick<
-  User,
-  | 'id'
-  | 'name'
-  | 'email'
-  | 'phoneNumber'
-  | 'address'
-  | 'roleId'
-  | 'identityDocumentTypeId'
-  | 'identityDocument'
->;
+export type UserPublicInfo = {
+  id: string;
+  name: string;
+  email: string;
+  identityDocument: string;
+  phoneNumber: string;
+  address: string;
+  role: { id: number, name: string }
+  identityDocumentType : { id: number, name: string }
+}
 
 export type UserWithTokens = {
   tokens: Tokens;

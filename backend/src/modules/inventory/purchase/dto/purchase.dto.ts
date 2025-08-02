@@ -5,6 +5,7 @@ import {
   IsDateString,
   IsNotEmpty,
   IsNumber,
+  IsObject,
   IsOptional,
   IsString,
   ValidateNested,
@@ -62,6 +63,16 @@ export class CreatePurchaseOrderDto {
   @ValidateNested({ each: true })
   @Type(() => PurchaseOrderItemDto)
   items: PurchaseOrderItemDto[];
+}
+export class ResponsePurchaseOrderDto {
+  orderNumber: string;
+  totalAmount: number;
+  supplier: { id: string; name: string };
+  history: { 
+    status: PurchaseOrderStatus; 
+    statusAt: Date; 
+    user: { id: string; name: string } 
+  }[];
 }
 
 export class ApprovePurchaseOrderDto {

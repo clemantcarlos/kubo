@@ -6,9 +6,8 @@ import {
 // PRISMA
 import {
   Prisma,
-  Product,
   ProductCategory,
-  ProductStorageUnit,
+  Unit,
 } from "@prisma/client";
 import { PrismaService } from "src/prisma/prisma.service";
 // DTO
@@ -158,17 +157,27 @@ export class ProductService {
     product: ProductDto,
     file: Express.Multer.File
   ): Promise<ResponseDto<ResponseProductDto>> {
-    const { name, description, stock, price, storageUnitId, categoryId } =
-      product;
+    const { 
+      name, 
+      description, 
+      stock, 
+      price, 
+      cost, 
+      storageUnitId, 
+      categoryId, 
+      supplierId 
+    } = product;
 
     try {
       const { imageUrl, imageHash } = await createImage(file); // ❌ crea la imagen
       const newProduct = await this.prisma.product.create({
         data: {
+          supplier: { connect: { id: supplierId } },
           name,
           description,
           stock,
           price,
+          cost,
           storageUnit: { connect: { id: storageUnitId } },
           category: { connect: { id: categoryId } },
           imageHash,
@@ -202,7 +211,7 @@ export class ProductService {
     file?: Express.Multer.File
   ): Promise<ResponseDto<ResponseProductDto>> {
     const parsedId = Number(id);
-    const { name, description, stock, price, storageUnitId, categoryId } =
+    const { name, description, stock, price, cost, storageUnitId, categoryId } =
       product;
 
     try {
@@ -226,6 +235,7 @@ export class ProductService {
             description,
             stock,
             price,
+            cost,
             storageUnit: { connect: { id: storageUnitId } },
             category: { connect: { id: categoryId } },
             imageHash,
@@ -403,7 +413,7 @@ export class ProductService {
   // STORAGE UNITS
   async getAllStorageUnits(): Promise<GetProductStorageUnitDto[]> {
     try {
-      return await this.prisma.productStorageUnit.findMany({
+      return await this.prisma.unit.findMany({
         select: {
           id: true,
           name: true,
@@ -415,12 +425,12 @@ export class ProductService {
     }
   }
   async createStorageUnit(
-    productStorageUnit: ProductStorageUnitDto
-  ): Promise<ProductStorageUnit> {
+    unit: ProductStorageUnitDto
+  ): Promise<Unit> {
     try {
-      const newProductStorageUnit = await this.prisma.productStorageUnit.create(
+      const newProductStorageUnit = await this.prisma.unit.create(
         {
-          data: productStorageUnit,
+          data: unit,
         }
       );
       return newProductStorageUnit;

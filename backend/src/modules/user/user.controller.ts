@@ -12,15 +12,15 @@ import {
   HttpStatus,
   Query,
   Post,
-} from '@nestjs/common';
-import { UserService } from './user.service';
-import { UpdateUserDto } from './dto/user.dto';
-import { Public } from 'src/modules/auth/common/decorators/public.decorator';
-import { IUsersResponse } from './interfaces/user.interface';
-import { UserRoleDto } from './dto/userRole.dto';
-import { UserIdentityDocumentTypeDto } from './dto/userIdentityDocumentType.dto';
+} from "@nestjs/common";
+import { UserService } from "./user.service";
+import { UpdateUserDto } from "./dto/user.dto";
+import { Public } from "src/modules/auth/common/decorators/public.decorator";
+import { IUsersResponse } from "./interfaces/user.interface";
+import { UserRoleDto } from "./dto/userRole.dto";
+import { IdentityDocumentTypeDto } from "./dto/identityDocumentType.dto";
 
-@Controller('user')
+@Controller("user")
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
@@ -28,7 +28,7 @@ export class UserController {
   @Get()
   @HttpCode(HttpStatus.OK)
   async getAllUsers(
-    @Query() query?: { skip?: number; take?: number },
+    @Query() query?: { skip?: number; take?: number }
   ): Promise<IUsersResponse> {
     const { skip, take } = query;
 
@@ -39,9 +39,9 @@ export class UserController {
   }
 
   @Public()
-  @Get(':id')
+  @Get(":id")
   @HttpCode(HttpStatus.FOUND)
-  async getUserById(@Param('id') id: string) {
+  async getUserById(@Param("id") id: string) {
     const user = this.userService.getUserById(id);
 
     if (!user) throw new NotFoundException();
@@ -50,9 +50,9 @@ export class UserController {
   }
 
   @Public()
-  @Get('search/:search')
+  @Get("search/:search")
   @HttpCode(HttpStatus.OK)
-  async searchUser(@Param('search') search: string) {
+  async searchUser(@Param("search") search: string) {
     const user = this.userService.searchUser(search);
 
     if (!user) throw new NotFoundException();
@@ -61,10 +61,10 @@ export class UserController {
   }
 
   @Public()
-  @Put(':id')
+  @Put(":id")
   @UsePipes(new ValidationPipe())
   @HttpCode(HttpStatus.OK)
-  async updateUser(@Param('id') id: string, @Body() user: UpdateUserDto) {
+  async updateUser(@Param("id") id: string, @Body() user: UpdateUserDto) {
     const getUser = await this.userService.getUserById(id);
     if (!getUser) throw new NotFoundException();
 
@@ -76,9 +76,9 @@ export class UserController {
   }
 
   @Public()
-  @Delete(':id')
+  @Delete(":id")
   @HttpCode(200)
-  async deleteUser(@Param('id') id: string) {
+  async deleteUser(@Param("id") id: string) {
     const user = this.userService.deletedUser(id);
 
     if (!user) throw new NotFoundException();
@@ -87,7 +87,7 @@ export class UserController {
   }
 
   @Public()
-  @Get('role')
+  @Get("role")
   @HttpCode(200)
   async getUserRoles() {
     const users = this.userService.getUserRoles();
@@ -98,7 +98,7 @@ export class UserController {
   }
 
   @Public()
-  @Post('role')
+  @Post("role")
   @UsePipes(new ValidationPipe())
   @HttpCode(HttpStatus.OK)
   async createUserRole(@Body() userRole: UserRoleDto) {
@@ -110,7 +110,7 @@ export class UserController {
   }
 
   @Public()
-  @Get('identity-document-type')
+  @Get("identity-document-type")
   @HttpCode(200)
   async getUserIdentityDocumentTypes() {
     const users = this.userService.getUserIdentityDocumentTypes();
@@ -121,12 +121,14 @@ export class UserController {
   }
 
   @Public()
-  @Post('identity-document-type')
+  @Post("identity-document-type")
   @UsePipes(new ValidationPipe())
   @HttpCode(HttpStatus.OK)
   async createUserIdentityDocumentType(
-    @Body() userIdentityDocumentType: UserIdentityDocumentTypeDto,
+    @Body() userIdentityDocumentType: IdentityDocumentTypeDto
   ) {
-    return this.userService.createUserIdentityDocument(userIdentityDocumentType);
+    return this.userService.createUserIdentityDocument(
+      userIdentityDocumentType
+    );
   }
 }

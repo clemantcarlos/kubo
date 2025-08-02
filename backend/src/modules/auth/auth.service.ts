@@ -29,6 +29,8 @@ export class AuthService {
     const saltOrRounds = 10;
     const hash = await bcrypt.hash(password, saltOrRounds);
     let newUser = null;
+
+
     try {
       newUser = await this.prisma.user.create({
         data: { password: hash, ...userWithoutPassword },
@@ -55,49 +57,43 @@ export class AuthService {
       where: {
         email: dto.email,
       },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        phoneNumber: true,
+        address: true,
+        identityDocument: true,
+        role: { select: { id: true, name: true } },
+        identityDocumentType: { select: { id: true, name: true } },
+        password: true,
+      }
     });
     
     if (!user) throw new UnauthorizedException('User or password incorrect');
 
     const {
-      id,
-      name,
-      email,
-      phoneNumber,
-      address,
-      roleId,
-      identityDocumentTypeId,
-      identityDocument,
-      ...userPrivateInfo
+      password,
+      ...rest
     } = user;
 
     const passwordMatches = await bcrypt.compare(
       dto.password,
-      userPrivateInfo.password,
+      password,
     );
-
     if (!passwordMatches)
       throw new UnauthorizedException('User or password incorrect');
 
-    const tokens = await this.getTokens(id, email);
+    const tokens = await this.getTokens(rest.id, rest.email);
 
-    await this.updateRtHash(id, tokens.refresh_token);
+    await this.updateRtHash(rest.id, tokens.refresh_token);
 
 
     return {
       success: true,
       data: {
         tokens,
-      user: {
-        id,
-        name,
-        email,
-        phoneNumber,
-        address,
-        roleId,
-        identityDocumentTypeId,
-        identityDocument,
-      },
+      user: rest,
       }
     }
   }

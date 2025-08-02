@@ -1,7 +1,7 @@
 // UTILS
-import { GetResponse } from "@/lib/api/queries"
+import { GetResponse } from "@/services/queries";
 // TYPES
-import { Purchase } from '@/modules/Inventory/purchase/types/purchase.type' 
+import { Purchase } from "@/modules/inventory/purchase/types/purchase.type";
 
 export const initialState: GetResponse<Purchase[]> = {
   success: true,
@@ -11,21 +11,21 @@ export const initialState: GetResponse<Purchase[]> = {
     page: 1,
     totalPages: 1,
   },
-}
+};
 
-type PurchaseAction =  
-  | { type: 'ADD_PURCHASE', payload: Purchase} 
-  | { type: 'UPDATE_PURCHASE', payload: Purchase}
-  | { type: 'GET_PURCHASES', payload: GetResponse<Purchase[]> }
-  | { type: 'DELETE_PURCHASE', payload: { id: number } }  
+type PurchaseAction =
+  | { type: "ADD_PURCHASE"; payload: Purchase }
+  | { type: "UPDATE_PURCHASE"; payload: Purchase }
+  | { type: "GET_PURCHASES"; payload: GetResponse<Purchase[]> }
+  | { type: "DELETE_PURCHASE"; payload: { id: number } };
 
 export function purchaseReducer(
-  state: GetResponse<Purchase[]>, 
+  state: GetResponse<Purchase[]>,
   action: PurchaseAction
 ): GetResponse<Purchase[]> {
-  const { payload: actionPayload, type: actionType} = action 
+  const { payload: actionPayload, type: actionType } = action;
   switch (actionType) {
-    case 'ADD_PURCHASE': {
+    case "ADD_PURCHASE": {
       const newState: GetResponse<Purchase[]> = {
         ...state,
         data: [actionPayload, ...state.data],
@@ -33,32 +33,32 @@ export function purchaseReducer(
           ...state.meta,
           total: (state.meta?.total || 0) + 1,
           page: state.meta?.page || 1,
-          totalPages: state.meta?.totalPages || 1
-        }
-      }
-      return newState
+          totalPages: state.meta?.totalPages || 1,
+        },
+      };
+      return newState;
     }
-    case 'UPDATE_PURCHASE': {
+    case "UPDATE_PURCHASE": {
       const newState: GetResponse<Purchase[]> = {
         ...state,
-        data: state.data.map(product => {
+        data: state.data.map((product) => {
           if (product.id === actionPayload.id) {
-            return actionPayload
-          } 
-          return product
+            return actionPayload;
+          }
+          return product;
         }),
-      }
+      };
 
-      return newState
+      return newState;
     }
-    case 'GET_PURCHASES': {
+    case "GET_PURCHASES": {
       return {
         ...state,
         data: actionPayload.data,
-        meta: actionPayload.meta
-      }
+        meta: actionPayload.meta,
+      };
     }
-    case 'DELETE_PURCHASE': {
+    case "DELETE_PURCHASE": {
       const newState = {
         ...state,
         data: state.data.reduce((acc: Purchase[], purchase: Purchase) => {
@@ -69,10 +69,10 @@ export function purchaseReducer(
             acc.push(purchase);
           }
           return acc;
-        }, [])
+        }, []),
       };
-      return newState
+      return newState;
     }
   }
-  return state
+  return state;
 }

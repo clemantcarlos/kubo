@@ -4,14 +4,20 @@ import { PrismaService } from '@/prisma/prisma.service';
 import { GetResponse, ResponseDto } from '@/interfaces/getResponse';
 import {
   CreatePurchaseOrderDto,
-  ApprovePurchaseOrderDto,
-  CancelPurchaseOrderDto,
-  CreatePurchaseReceiptDto,
+  // ApprovePurchaseOrderDto,
+  // CancelPurchaseOrderDto,
+  // CreatePurchaseReceiptDto,
   CreateInvoiceDto,
   PayInvoiceDto,
   PurchaseOrderStatus,
   InvoiceStatus,
+  ResponsePurchaseOrderDto,
 } from './dto/purchase.dto';
+
+/*
+  TODO: lISTA DE COSAS POR HACER AQUI
+  - ARREGLAR QUE TODOS LOS UPDATES CAMBIEN EL UPDATE AT
+*/
 
 @Injectable()
 export class PurchaseService {
@@ -22,19 +28,14 @@ export class PurchaseService {
     limit: number = 10,
     status?: string,
     supplierId?: string,
-  ): Promise<GetResponse<any[]>> {
+  ): Promise<GetResponse<ResponsePurchaseOrderDto[]>> {
     const formatedPage = Number(page);
     const formatedLimit = Number(limit);
     
     try {
       const where: {
-        status?: PurchaseOrderStatus;
         supplierId?: string;
       } = {};
-      
-      if (status && status !== 'undefined') {
-        where.status = status as PurchaseOrderStatus;
-      }
       
       if (supplierId && supplierId !== 'undefined') {
         where.supplierId = supplierId;
@@ -43,42 +44,39 @@ export class PurchaseService {
       const [purchaseOrders, total] = await this.prisma.$transaction([
         this.prisma.purchaseOrder.findMany({
           where,
+          select: {
+            id: true,
+            orderNumber: true,
+            totalAmount: true,
+            supplier: { select: { id: true, name:true } },
+            history: { 
+              select: { 
+                notes: true,
+                status: true, 
+                statusAt: true,
+                user: { select: { id: true, name:true } },
+              } 
+            },
+          },
           skip: (formatedPage - 1) * formatedLimit,
           take: formatedLimit,
           orderBy: { id: 'desc' },
-          include: {
-            supplier: {
-              select: { id: true, name: true }
-            },
-            user: {
-              select: { id: true, name: true }
-            },
-            items: {
-              include: {
-                product: {
-                  select: { id: true, name: true, price: true }
-                }
-              }
-            },
-            receipts: {
-              include: {
-                items: {
-                  include: {
-                    product: {
-                      select: { id: true, name: true }
-                    }
-                  }
-                }
-              }
-            }
-          }
         }),
         this.prisma.purchaseOrder.count({ where })
       ]);
 
+      // FORCE TYPE THE STATUS
+      const mappedOrders = purchaseOrders.map(po => ({
+        ...po,
+        history: po.history.map(h => ({
+          ...h,
+          status: h.status as unknown as PurchaseOrderStatus,
+        }))
+      }))
+
       return {
         success: true,
-        data: purchaseOrders,
+        data: mappedOrders,
         meta: {
           total,
           page: formatedPage,
@@ -103,9 +101,7 @@ export class PurchaseService {
           supplier: {
             select: { id: true, name: true }
           },
-          user: {
-            select: { id: true, name: true }
-          },
+         
           items: {
             include: {
               product: {
@@ -168,18 +164,20 @@ export class PurchaseService {
           data: {
             orderNumber,
             supplierId: dto.supplierId,
-            status: PurchaseOrderStatus.PENDING,
             expectedDeliveryDate: new Date(dto.expectedDeliveryDate),
             totalAmount,
             notes: dto.notes,
-            createdBy: dto.createdBy || 'system', // TODO: Get from auth context
           },
           include: {
             supplier: {
               select: { id: true, name: true }
             },
-            user: {
-              select: { id: true, name: true }
+            history: {
+              select: { 
+                status: true, 
+                statusAt: true, 
+                user: { select: { id:true, name:true } }
+              }
             }
           }
         });
@@ -221,231 +219,229 @@ export class PurchaseService {
     }
   }
 
-  async approvePurchaseOrder(id: number, dto: ApprovePurchaseOrderDto): Promise<ResponseDto<any>> {
-    const parsedId = Number(id);
+  // async approvePurchaseOrder(id: number, dto: ApprovePurchaseOrderDto): Promise<ResponseDto<any>> {
+  //   const parsedId = Number(id);
     
-    try {
-      const purchaseOrder = await this.prisma.purchaseOrder.findUnique({
-        where: { id: parsedId }
-      });
+  //   try {
+  //     const purchaseOrder = await this.prisma.purchaseOrder.findUnique({
+  //       where: { id: parsedId }
+  //     });
 
-      if (!purchaseOrder) {
-        throw new NotFoundException('Purchase order not found');
-      }
+  //     if (!purchaseOrder) {
+  //       throw new NotFoundException('Purchase order not found');
+  //     }
 
-      if (purchaseOrder.status !== PurchaseOrderStatus.PENDING) {
-        throw new BadRequestException('Purchase order can only be approved when pending');
-      }
+  //     // if (purchaseOrder.status !== PurchaseOrderStatus.PENDING) {
+  //     //   throw new BadRequestException('Purchase order can only be approved when pending');
+  //     // }
 
-      const updatedOrder = await this.prisma.purchaseOrder.update({
-        where: { id: parsedId },
-        data: {
-          status: PurchaseOrderStatus.APPROVED,
-          approvedBy: dto.approvedBy,
-          approvedAt: new Date(),
-        },
-        include: {
-          supplier: {
-            select: { id: true, name: true }
-          },
-          user: {
-            select: { id: true, name: true }
-          },
-          items: {
-            include: {
-              product: {
-                select: { id: true, name: true, price: true }
-              }
-            }
-          }
-        }
-      });
+  //     const updatedOrder = await this.prisma.purchaseOrder.update({
+  //       where: { id: parsedId },
+  //       data: {
+  //         // status: PurchaseOrderStatus.APPROVED,
+  //         approvedBy: dto.approvedBy,
+  //         approvedAt: new Date(),
+  //       },
+  //       include: {
+  //         supplier: {
+  //           select: { id: true, name: true }
+  //         },
+  //         user: {
+  //           select: { id: true, name: true }
+  //         },
+  //         items: {
+  //           include: {
+  //             product: {
+  //               select: { id: true, name: true, price: true }
+  //             }
+  //           }
+  //         }
+  //       }
+  //     });
 
-      return {
-        success: true,
-        data: updatedOrder,
-      };
-    } catch (e) {
-      if (e instanceof NotFoundException || e instanceof BadRequestException) {
-        throw e;
-      }
-      throw new BadRequestException(e);
-    }
-  }
-
-  async cancelPurchaseOrder(id: number, dto: CancelPurchaseOrderDto): Promise<ResponseDto<any>> {
-    const parsedId = Number(id);
+  //     return {
+  //       success: true,
+  //       data: updatedOrder,
+  //     };
+  //   } catch (e) {
+  //     if (e instanceof NotFoundException || e instanceof BadRequestException) {
+  //       throw e;
+  //     }
+  //     throw new BadRequestException(e);
+  //   }
+  // }
+  // async cancelPurchaseOrder(id: number, dto: CancelPurchaseOrderDto): Promise<ResponseDto<any>> {
+  //   const parsedId = Number(id);
     
-    try {
-      const purchaseOrder = await this.prisma.purchaseOrder.findUnique({
-        where: { id: parsedId }
-      });
+  //   try {
+  //     const purchaseOrder = await this.prisma.purchaseOrder.findUnique({
+  //       where: { id: parsedId }
+  //     });
 
-      if (!purchaseOrder) {
-        throw new NotFoundException('Purchase order not found');
-      }
+  //     if (!purchaseOrder) {
+  //       throw new NotFoundException('Purchase order not found');
+  //     }
 
-      if (purchaseOrder.status === PurchaseOrderStatus.RECEIVED) {
-        throw new BadRequestException('Cannot cancel a received purchase order');
-      }
+  //     if (purchaseOrder.status === PurchaseOrderStatus.RECEIVED) {
+  //       throw new BadRequestException('Cannot cancel a received purchase order');
+  //     }
 
-      const updatedOrder = await this.prisma.purchaseOrder.update({
-        where: { id: parsedId },
-        data: {
-          status: PurchaseOrderStatus.CANCELLED,
-          cancelledBy: dto.cancelledBy,
-          cancelledAt: new Date(),
-          cancellationReason: dto.reason,
-        },
-        include: {
-          supplier: {
-            select: { id: true, name: true }
-          },
-          user: {
-            select: { id: true, name: true }
-          },
-          items: {
-            include: {
-              product: {
-                select: { id: true, name: true, price: true }
-              }
-            }
-          }
-        }
-      });
+  //     const updatedOrder = await this.prisma.purchaseOrder.update({
+  //       where: { id: parsedId },
+  //       data: {
+  //         status: PurchaseOrderStatus.CANCELLED,
+  //         cancelledBy: dto.cancelledBy,
+  //         cancelledAt: new Date(),
+  //         cancellationReason: dto.reason,
+  //       },
+  //       include: {
+  //         supplier: {
+  //           select: { id: true, name: true }
+  //         },
+  //         user: {
+  //           select: { id: true, name: true }
+  //         },
+  //         items: {
+  //           include: {
+  //             product: {
+  //               select: { id: true, name: true, price: true }
+  //             }
+  //           }
+  //         }
+  //       }
+  //     });
 
-      return {
-        success: true,
-        data: updatedOrder,
-      };
-    } catch (e) {
-      if (e instanceof NotFoundException || e instanceof BadRequestException) {
-        throw e;
-      }
-      throw new BadRequestException(e);
-    }
-  }
-
-  async receivePurchase(id: number, dto: CreatePurchaseReceiptDto): Promise<ResponseDto<any>> {
-    const parsedId = Number(id);
+  //     return {
+  //       success: true,
+  //       data: updatedOrder,
+  //     };
+  //   } catch (e) {
+  //     if (e instanceof NotFoundException || e instanceof BadRequestException) {
+  //       throw e;
+  //     }
+  //     throw new BadRequestException(e);
+  //   }
+  // }
+  // async receivePurchase(id: number, dto: CreatePurchaseReceiptDto): Promise<ResponseDto<any>> {
+  //   const parsedId = Number(id);
     
-    try {
-      const result = await this.prisma.$transaction(async (tx) => {
-        // Verificar que la orden existe y está aprobada
-        const purchaseOrder = await tx.purchaseOrder.findUnique({
-          where: { id: parsedId },
-          include: { items: true }
-        });
+  //   try {
+  //     const result = await this.prisma.$transaction(async (tx) => {
+  //       // Verificar que la orden existe y está aprobada
+  //       const purchaseOrder = await tx.purchaseOrder.findUnique({
+  //         where: { id: parsedId },
+  //         include: { items: true }
+  //       });
 
-        if (!purchaseOrder) {
-          throw new NotFoundException('Purchase order not found');
-        }
+  //       if (!purchaseOrder) {
+  //         throw new NotFoundException('Purchase order not found');
+  //       }
 
-        if (purchaseOrder.status !== PurchaseOrderStatus.APPROVED) {
-          throw new BadRequestException('Purchase order must be approved before receiving');
-        }
+  //       if (purchaseOrder.status !== PurchaseOrderStatus.APPROVED) {
+  //         throw new BadRequestException('Purchase order must be approved before receiving');
+  //       }
 
-        // Generar número de recepción
-        const lastReceipt = await tx.purchaseReceipt.findFirst({
-          orderBy: { id: 'desc' }
-        });
-        const receiptNumber = `REC-${new Date().getFullYear()}-${String((lastReceipt?.id || 0) + 1).padStart(3, '0')}`;
+  //       // Generar número de recepción
+  //       const lastReceipt = await tx.purchaseReceipt.findFirst({
+  //         orderBy: { id: 'desc' }
+  //       });
+  //       const receiptNumber = `REC-${new Date().getFullYear()}-${String((lastReceipt?.id || 0) + 1).padStart(3, '0')}`;
 
-        // Crear recepción
-        const receipt = await tx.purchaseReceipt.create({
-          data: {
-            receiptNumber,
-            purchaseOrderId: parsedId,
-            invoiceNumber: dto.invoiceNumber,
-            invoiceDate: new Date(dto.invoiceDate),
-            invoiceAmount: dto.invoiceAmount,
-            receivedBy: dto.receivedBy,
-            notes: dto.notes,
-            isPartial: dto.isPartial || false,
-          }
-        });
+  //       // Crear recepción
+  //       const receipt = await tx.purchaseReceipt.create({
+  //         data: {
+  //           receiptNumber,
+  //           purchaseOrderId: parsedId,
+  //           invoiceNumber: dto.invoiceNumber,
+  //           invoiceDate: new Date(dto.invoiceDate),
+  //           invoiceAmount: dto.invoiceAmount,
+  //           receivedBy: dto.receivedBy,
+  //           notes: dto.notes,
+  //           isPartial: dto.isPartial || false,
+  //         }
+  //       });
 
-        // Crear items de recepción y actualizar inventario
-        const receiptItems = [];
-        const inventoryMovements = [];
+  //       // Crear items de recepción y actualizar inventario
+  //       const receiptItems = [];
+  //       const inventoryMovements = [];
 
-        for (const item of dto.items) {
-          // Crear item de recepción
-          const receiptItem = await tx.purchaseReceiptItem.create({
-            data: {
-              purchaseReceiptId: receipt.id,
-              productId: item.productId,
-              quantityReceived: item.quantityReceived,
-              unitPrice: item.unitPrice,
-              subtotal: item.quantityReceived * item.unitPrice,
-              notes: item.notes,
-            },
-            include: {
-              product: {
-                select: { id: true, name: true }
-              }
-            }
-          });
-          receiptItems.push(receiptItem);
+  //       for (const item of dto.items) {
+  //         // Crear item de recepción
+  //         const receiptItem = await tx.purchaseReceiptItem.create({
+  //           data: {
+  //             purchaseReceiptId: receipt.id,
+  //             productId: item.productId,
+  //             quantityReceived: item.quantityReceived,
+  //             unitPrice: item.unitPrice,
+  //             subtotal: item.quantityReceived * item.unitPrice,
+  //             notes: item.notes,
+  //           },
+  //           include: {
+  //             product: {
+  //               select: { id: true, name: true }
+  //             }
+  //           }
+  //         });
+  //         receiptItems.push(receiptItem);
 
-          // Actualizar stock del producto
-          await tx.product.update({
-            where: { id: item.productId },
-            data: {
-              stock: {
-                increment: item.quantityReceived
-              }
-            }
-          });
+  //         // Actualizar stock del producto
+  //         await tx.product.update({
+  //           where: { id: item.productId },
+  //           data: {
+  //             stock: {
+  //               increment: item.quantityReceived
+  //             }
+  //           }
+  //         });
 
-          // Crear movimiento de inventario
-          const movement = await tx.inventoryMovement.create({
-            data: {
-              productId: item.productId,
-              type: 'ENTRY',
-              quantity: item.quantityReceived,
-              reason: `Purchase receipt ${receiptNumber}`,
-              reference: receiptNumber,
-              userId: dto.receivedBy,
-            }
-          });
-          inventoryMovements.push(movement);
-        }
+  //         // Crear movimiento de inventario
+  //         const movement = await tx.inventoryMovement.create({
+  //           data: {
+  //             productId: item.productId,
+  //             type: 'ENTRY',
+  //             quantity: item.quantityReceived,
+  //             reason: `Purchase receipt ${receiptNumber}`,
+  //             reference: receiptNumber,
+  //             userId: dto.receivedBy,
+  //           }
+  //         });
+  //         inventoryMovements.push(movement);
+  //       }
 
-        // Actualizar estado de la orden si es recepción completa
-        let orderStatus = PurchaseOrderStatus.APPROVED;
-        if (!dto.isPartial) {
-          orderStatus = PurchaseOrderStatus.RECEIVED;
-          await tx.purchaseOrder.update({
-            where: { id: parsedId },
-            data: {
-              status: orderStatus,
-              actualDeliveryDate: new Date(),
-            }
-          });
-        }
+  //       // Actualizar estado de la orden si es recepción completa
+  //       let orderStatus = PurchaseOrderStatus.APPROVED;
+  //       if (!dto.isPartial) {
+  //         orderStatus = PurchaseOrderStatus.RECEIVED;
+  //         await tx.purchaseOrder.update({
+  //           where: { id: parsedId },
+  //           data: {
+  //             status: orderStatus,
+  //             actualDeliveryDate: new Date(),
+  //           }
+  //         });
+  //       }
 
-        return {
-          receipt: {
-            ...receipt,
-            items: receiptItems
-          },
-          inventoryMovements,
-          orderStatus
-        };
-      });
+  //       return {
+  //         receipt: {
+  //           ...receipt,
+  //           items: receiptItems
+  //         },
+  //         inventoryMovements,
+  //         orderStatus
+  //       };
+  //     });
 
-      return {
-        success: true,
-        data: result,
-      };
-    } catch (e) {
-      if (e instanceof NotFoundException || e instanceof BadRequestException) {
-        throw e;
-      }
-      throw new BadRequestException(e);
-    }
-  }
+  //     return {
+  //       success: true,
+  //       data: result,
+  //     };
+  //   } catch (e) {
+  //     if (e instanceof NotFoundException || e instanceof BadRequestException) {
+  //       throw e;
+  //     }
+  //     throw new BadRequestException(e);
+  //   }
+  // }
 
   async createInvoice(dto: CreateInvoiceDto): Promise<ResponseDto<any>> {
     try {

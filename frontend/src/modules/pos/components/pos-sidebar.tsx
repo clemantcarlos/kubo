@@ -28,19 +28,23 @@ const data = {
       url: '/',
       items: [
         {
-          title: 'Activity',
+          title: 'Actividad',
           url: '/activity',
         },
         {
-          title: 'Report',
+          title: 'Reportes',
           url: '/report',
         },
         {
-          title: 'Inventory',
+          title: 'Combos',
+          url: '/combos',
+        },
+        {
+          title: 'Inventario',
           url: '/inventory',
         },
         {
-          title: 'Settings',
+          title: 'Configuración',
           url: '/settings',
         }
       ],

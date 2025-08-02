@@ -2,17 +2,17 @@ import { useCallback, useReducer } from "react";
 //  REDUCERS
 import { initialState, purchaseReducer } from "@/reducers/purchase";
 // SCHEMAS
-import { PurchaseFormSchema } from "@/modules/Inventory/purchase/schema/purchase.schema"
+import { PurchaseFormSchema } from "@/modules/inventory/purchase/schema/purchase.schema";
 // TYPES
-import { Purchase } from "@/modules/Inventory/purchase/types/purchase.type";
+import { Purchase } from "@/modules/inventory/purchase/types/purchase.type";
 // UTILS
-import { 
+import {
   deleteQuery,
-  getQuery, 
-  postQueryJson, 
-  putQueryJson 
-} from "@/lib/api/queries";
-import { API_ENDPOINTS } from "@/lib/api/endpoints";
+  getQuery,
+  postQueryJson,
+  putQueryJson,
+} from "@/services/queries";
+import { API_ENDPOINTS } from "@/services/endpoints";
 // COMPONENTS
 import { toast } from "sonner";
 
@@ -42,6 +42,7 @@ export default function usePurchaseState() {
           API_ENDPOINTS.PURCHASES.BASE_GET_ORDER(page, 10),
           controller.signal
         );
+        console.log(res);
         supplierDispatch({ type: "GET_PURCHASES", payload: res });
       } catch (err) {
         if (err instanceof Error) {
@@ -63,7 +64,11 @@ export default function usePurchaseState() {
       );
 
       if (findPurchase)
-        return { success: true, data: findPurchase, meta: purchaseOrderState.meta };
+        return {
+          success: true,
+          data: findPurchase,
+          meta: purchaseOrderState.meta,
+        };
 
       try {
         const res = await getQuery<Purchase>(
@@ -118,23 +123,58 @@ export default function usePurchaseState() {
       controller.abort();
     }
   };
-  const updatePurchase = async (id: number, purchase: PurchaseFormSchema)  => {
+  const updatePurchase = async (id: number, purchase: PurchaseFormSchema) => {
+    const controller = new AbortController();
+    try {
+      const updatedPurchase = await putQueryJson<Purchase, PurchaseFormSchema>(
+        API_ENDPOINTS.PURCHASES.ORDER_BY_ID(id),
+        purchase,
+        controller.signal
+      );
+      supplierDispatch({
+        type: "UPDATE_PURCHASE",
+        payload: updatedPurchase.data,
+      });
+      toast.success("Orden de compra actualizadaexitosamente");
+    } catch (err) {
+      if (err instanceof Error) {
+        if (err.name !== "AbortError") {
+          toast.error("No se pudo actualizar la orden de compra", {
+            unstyled: true,
+            classNames: {
+              error: "bg-red-500 flex gap-2 rounded-md p-4",
+            },
+          });
+        }
+      } else {
+        toast.error("No se pudo actualizar la orden de compra", {
+          unstyled: true,
+          classNames: {
+            error: "bg-red-500 flex gap-2 rounded-md p-4",
+          },
+        });
+      }
+    } finally {
+      controller.abort();
+    }
+  };
+  const deletePurchase = useCallback(
+    async (id: number) => {
       const controller = new AbortController();
       try {
-        const updatedPurchase = await putQueryJson<Purchase, PurchaseFormSchema>(
+        await deleteQuery<Purchase>(
           API_ENDPOINTS.PURCHASES.ORDER_BY_ID(id),
-          purchase,
           controller.signal
         );
         supplierDispatch({
-          type: "UPDATE_PURCHASE",
-          payload: updatedPurchase.data,
+          type: "DELETE_PURCHASE",
+          payload: { id },
         });
-        toast.success("Orden de compra actualizadaexitosamente");
+        toast.success("Orden de compra eliminado exitosamente");
       } catch (err) {
         if (err instanceof Error) {
           if (err.name !== "AbortError") {
-            toast.error("No se pudo actualizar la orden de compra", {
+            toast.error("No se pudo eliminar la orden de compra", {
               unstyled: true,
               classNames: {
                 error: "bg-red-500 flex gap-2 rounded-md p-4",
@@ -142,7 +182,7 @@ export default function usePurchaseState() {
             });
           }
         } else {
-          toast.error("No se pudo actualizar la orden de compra", {
+          toast.error("No se pudo eliminar la orden de compra", {
             unstyled: true,
             classNames: {
               error: "bg-red-500 flex gap-2 rounded-md p-4",
@@ -152,44 +192,9 @@ export default function usePurchaseState() {
       } finally {
         controller.abort();
       }
-    };
-  const deletePurchase = useCallback(
-      async (id: number) => {
-        const controller = new AbortController();
-        try {
-          await deleteQuery<Purchase>(
-            API_ENDPOINTS.PURCHASES.ORDER_BY_ID(id),
-            controller.signal
-          );
-          supplierDispatch({
-            type: "DELETE_PURCHASE",
-            payload: { id },
-          });
-          toast.success("Orden de compra eliminado exitosamente");
-        } catch (err) {
-          if (err instanceof Error) {
-            if (err.name !== "AbortError") {
-              toast.error("No se pudo eliminar la orden de compra", {
-                unstyled: true,
-                classNames: {
-                  error: "bg-red-500 flex gap-2 rounded-md p-4",
-                },
-              });
-            }
-          } else {
-            toast.error("No se pudo eliminar la orden de compra", {
-              unstyled: true,
-              classNames: {
-                error: "bg-red-500 flex gap-2 rounded-md p-4",
-              },
-            });
-          }
-        } finally {
-          controller.abort();
-        }
-      },
-      [supplierDispatch]
-    );
+    },
+    [supplierDispatch]
+  );
 
   return {
     value: purchaseOrderState,

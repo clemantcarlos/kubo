@@ -4,6 +4,7 @@ export const productSelect = {
   description: true,
   stock: true,
   price: true,
+  cost: true,
   isAvailable: true,
   imageUrl: true, 
   category: { select: { id:true, name: true } },

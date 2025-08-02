@@ -1,29 +1,36 @@
-// import useUser from '@/hooks/useUser';
 import { 
   PropsWithChildren, 
-  // useEffect 
 } from 'react';
-// import { useNavigate } from 'react-router';
+import { Navigate } from 'react-router';
 
 type ProtectedRouteProps = PropsWithChildren;
 
 export default function ProtectedRoute({ children }: ProtectedRouteProps) {
-  // const { user, login } = useUser();
+
+  window.addEventListener("storage", (e) => {
+    console.log(e)
+    if (e.key === "user-token") {
+      console.log("Token updated");
+    }
+  });
+
+  const token = localStorage.getItem('user-token');
+
+  return token !== null && token !== undefined ? (
+    children
+  ) : (
+    <Navigate to="/signin" replace />
+  )
+}
   // const navigate = useNavigate();
 
-  // TODO: DESCOMENTAR EL CODIGO EN PRODUCCION
-
   // useEffect(() => {
-  //   const token = localStorage.getItem('user-token');
-  //   if (user === null || user === undefined) {
+  //   if (token === null || token === undefined) {
   //     // TODO: HACER UNA PAGINA DE ERROR Y LUEGO REDIRIGIR 
   //     navigate('/signin', { replace: true });
   //     return
   //   }
-  //   if (token !== null || token !== undefined) {
-  //     login(token)
-  //   }
-  // }, [login, navigate, user]);
+  //   console.log(token)
+  // }, [navigate]);
 
-  return children;
-}
+  // return children;

@@ -51,24 +51,24 @@ export class PurchaseController {
     return this.purchaseService.createPurchaseOrder(dto);
   }
 
-  @Public()
-  @Put('order/:id/approve')
-  @HttpCode(HttpStatus.OK)
-  async approvePurchaseOrder(@Param('id') id: number, @Body() dto: ApprovePurchaseOrderDto) {
-    return this.purchaseService.approvePurchaseOrder(id, dto);
-  }
+  // @Public()
+  // @Put('order/:id/approve')
+  // @HttpCode(HttpStatus.OK)
+  // async approvePurchaseOrder(@Param('id') id: number, @Body() dto: ApprovePurchaseOrderDto) {
+  //   return this.purchaseService.approvePurchaseOrder(id, dto);
+  // }
 
-  @Public()
-  @Put('order/:id/cancel')
-  @HttpCode(HttpStatus.OK)
-  async cancelPurchaseOrder(@Param('id') id: number, @Body() dto: CancelPurchaseOrderDto) {
-    return this.purchaseService.cancelPurchaseOrder(id, dto);
-  }
+  // @Public()
+  // @Put('order/:id/cancel')
+  // @HttpCode(HttpStatus.OK)
+  // async cancelPurchaseOrder(@Param('id') id: number, @Body() dto: CancelPurchaseOrderDto) {
+  //   return this.purchaseService.cancelPurchaseOrder(id, dto);
+  // }
 
-  @Public()
-  @Post('order/:id/receive')
-  @HttpCode(HttpStatus.OK)
-  async receivePurchase(@Param('id') id: number, @Body() dto: CreatePurchaseReceiptDto) {
-    return this.purchaseService.receivePurchase(id, dto);
-  }
+  // @Public()
+  // @Post('order/:id/receive')
+  // @HttpCode(HttpStatus.OK)
+  // async receivePurchase(@Param('id') id: number, @Body() dto: CreatePurchaseReceiptDto) {
+  //   return this.purchaseService.receivePurchase(id, dto);
+  // }
 }

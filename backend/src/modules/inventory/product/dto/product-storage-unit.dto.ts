@@ -31,6 +31,7 @@ export class ProductStorageUnitDto {
   @IsOptional()
   updatedAt?: string;
 }
+// TODO: CHANGE TO GLOBAL DTO AND CHANGE NAME TO UNITDTO
 export class GetProductStorageUnitDto {
   @IsNumber()
   @IsNotEmpty()

@@ -26,7 +26,7 @@ import { ProductCategoryDto } from "./dto/product-category.dto";
 // SERVICE
 import { ProductService } from "./product.service";
 // PRISMA MODELS
-import { Product, ProductCategory, ProductStorageUnit } from "@prisma/client";
+import { Product, ProductCategory, Unit } from "@prisma/client";
 // Multer
 import { diskStorage } from "multer";
 import { FileInterceptor } from "@nestjs/platform-express";
@@ -101,7 +101,7 @@ export class ProductController {
   @Post('storage-unit')
   async createProductStorageUnit(
     @Body() productStorageUnit: ProductStorageUnitDto
-  ): Promise<ProductStorageUnit> {
+  ): Promise<Unit> {
     return this.productService.createStorageUnit(productStorageUnit);
   }
   @Public()

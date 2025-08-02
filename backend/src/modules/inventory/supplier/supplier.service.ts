@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 import { PrismaService } from "@/prisma/prisma.service";
-import { CreateSupplierDto, ResponseSupplierDto } from "./dto/supplier.dto";
+import { CreateSupplierDto, ResponseSupplierDto, SupplierDto } from "./dto/supplier.dto";
 import { Prisma } from "@prisma/client";
 import { GetResponse, ResponseDto } from "@/interfaces/getResponse";
 
@@ -35,7 +35,24 @@ export class SupplierService {
       throw new BadRequestException(e);
     }
   }
-
+  async getAllSuppliers(): Promise<GetResponse<Pick<SupplierDto, 'id' | 'name'>[]>> {
+    try {
+      const suppliers = await this.prisma.supplier.findMany({
+        select: { id: true, name: true },
+      });
+      return {
+        success: true,
+        data: suppliers,
+        meta: {
+          total: suppliers.length,
+          page: 1,
+          totalPages: 1,
+        },
+      };
+    } catch (e) {
+      throw new BadRequestException(e);
+    }
+  }
   async getSuppliers(
     page: number = 1,
     limit: number = 10,
@@ -156,7 +173,6 @@ export class SupplierService {
       throw new BadRequestException(e);
     }
   }
-
   async getSupplier(id: string): Promise<GetResponse<ResponseSupplierDto>> {
     try {
       const supplier = await this.prisma.supplier.findUnique({
@@ -178,7 +194,6 @@ export class SupplierService {
       throw new BadRequestException(e);
     }
   }
-
   async updateSupplier(
     id: string,
     supplier: CreateSupplierDto

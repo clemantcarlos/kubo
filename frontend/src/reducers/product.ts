@@ -1,7 +1,7 @@
 // UTILS
-import { GetResponse } from "@/lib/api/queries"
+import { GetResponse } from "@/services/queries";
 // TYPES
-import { Product } from "@/modules/Inventory/product/types/product"
+import { Product } from "@/modules/inventory/product/types/product";
 
 export const initialState: GetResponse<Product[]> = {
   success: true,
@@ -11,19 +11,22 @@ export const initialState: GetResponse<Product[]> = {
     page: 1,
     totalPages: 1,
   },
-}
+};
 
-type ProductAction =  
-  | { type: 'ADD_PRODUCT', payload: Product} 
-  | { type: 'UPDATE_PRODUCT', payload: Product}
-  | { type: 'GET_PRODUCTS', payload: GetResponse<Product[]> }
-  | { type: 'UPDATE_STOCK', payload: { id: number, stock: number } }
-  | { type: 'DELETE_PRODUCT', payload: { id: number } }
+type ProductAction =
+  | { type: "ADD_PRODUCT"; payload: Product }
+  | { type: "UPDATE_PRODUCT"; payload: Product }
+  | { type: "GET_PRODUCTS"; payload: GetResponse<Product[]> }
+  | { type: "UPDATE_STOCK"; payload: { id: number; stock: number } }
+  | { type: "DELETE_PRODUCT"; payload: { id: number } };
 
-export function productReducer(state: GetResponse<Product[]>, action: ProductAction): GetResponse<Product[]> {
-  const { payload: actionPayload, type: actionType} = action 
+export function productReducer(
+  state: GetResponse<Product[]>,
+  action: ProductAction
+): GetResponse<Product[]> {
+  const { payload: actionPayload, type: actionType } = action;
   switch (actionType) {
-    case 'ADD_PRODUCT': {
+    case "ADD_PRODUCT": {
       const newState: GetResponse<Product[]> = {
         ...state,
         data: [actionPayload, ...state.data],
@@ -31,49 +34,49 @@ export function productReducer(state: GetResponse<Product[]>, action: ProductAct
           ...state.meta,
           total: (state.meta?.total || 0) + 1,
           page: state.meta?.page || 1,
-          totalPages: state.meta?.totalPages || 1
-        }
-      }
-      return newState
+          totalPages: state.meta?.totalPages || 1,
+        },
+      };
+      return newState;
     }
-    case 'UPDATE_PRODUCT': {
+    case "UPDATE_PRODUCT": {
       const newState: GetResponse<Product[]> = {
         ...state,
-        data: state.data.map(product => {
+        data: state.data.map((product) => {
           if (product.id === actionPayload.id) {
-            return actionPayload
-          } 
-          return product
+            return actionPayload;
+          }
+          return product;
         }),
-      }
+      };
 
-      return newState
+      return newState;
     }
-    case 'GET_PRODUCTS': {
+    case "GET_PRODUCTS": {
       return {
         ...state,
         data: actionPayload.data,
-        meta: actionPayload.meta
-      }
+        meta: actionPayload.meta,
+      };
     }
-    case 'UPDATE_STOCK': {
+    case "UPDATE_STOCK": {
       const newState = {
         ...state,
         data: state.data.reduce((acc: Product[], product: Product) => {
           if (product.id === actionPayload.id) {
-            acc.unshift({ 
-              ...product, 
-              stock: actionPayload.stock 
+            acc.unshift({
+              ...product,
+              stock: actionPayload.stock,
             });
           } else {
             acc.push(product);
           }
           return acc;
-        }, [])
+        }, []),
       };
-      return newState
+      return newState;
     }
-    case 'DELETE_PRODUCT': {
+    case "DELETE_PRODUCT": {
       const newState = {
         ...state,
         data: state.data.reduce((acc: Product[], product: Product) => {
@@ -84,10 +87,10 @@ export function productReducer(state: GetResponse<Product[]>, action: ProductAct
             acc.push(product);
           }
           return acc;
-        }, [])
+        }, []),
       };
-      return newState
+      return newState;
     }
   }
-  return state
+  return state;
 }

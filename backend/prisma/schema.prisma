@@ -26,27 +26,23 @@ model User {
   role   UserRole @relation(fields: [roleId], references: [id])
   roleId Int
 
-  identityDocumentType   UserIdentityDocumentType @relation(fields: [identityDocumentTypeId], references: [id])
+  identityDocumentType   IdentityDocumentType @relation(fields: [identityDocumentTypeId], references: [id])
   identityDocumentTypeId Int
 
-  orders Order[]
-
   // --- RELATIONS ---
+  orders Order[] // <-- this if for the POS orders
   // PURCHASE
-  createdPurchaseOrders   PurchaseOrder[]
-  approvedPurchaseOrders  PurchaseOrder[]     @relation("ApprovedBy")
-  cancelledPurchaseOrders PurchaseOrder[]     @relation("CancelledBy")
+  purchaseOrderHistory    PurchaseOrderHistory[]
   receivedPurchases       PurchaseReceipt[]
   // PRODUCTION
-  productions             Production[]
+  // productions             Production[]
   // INVENTORY
   inventoryMovements      InventoryMovement[]
   // SALES
   sales Sale[]
 }
 
-// TODO : el documento de identidad no es solo de los usuarios sino de cualquier tipo de persona.
-model UserIdentityDocumentType {
+model IdentityDocumentType {
   id          Int      @id @default(autoincrement())
   name        String   @unique
   description String?
@@ -124,30 +120,31 @@ model Product {
   description String?
   stock       Int
   price       Float
+  cost        Float
   imageUrl    String?
   imageHash   String? @unique
   isAvailable Boolean @default(true)
 
   // Nuevos campos
   type     ProductType @default(RAW_MATERIAL)
-  recipe   Recipe?     @relation(fields: [recipeId], references: [id])
-  recipeId Int?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
 
-  storageUnit   ProductStorageUnit @relation(fields: [storageUnitId], references: [id])
+  storageUnit   Unit @relation(fields: [storageUnitId], references: [id])
   storageUnitId Int
   category      ProductCategory    @relation(fields: [categoryId], references: [id])
   categoryId    Int
+  supplier      Supplier           @relation(fields: [supplierId], references: [id])
+  supplierId    String
 
   // Relaciones
-  orders             OrderItem[]
+  orders             OrderItem[] // Como producto de ordene de compra
   ingredients        RecipeIngredient[] // Como ingrediente en otras recetas
-  productions        Production[] // Como producto final en producciones
-  movements          InventoryMovement[]
-  purchaseOrderItems PurchaseOrderItem[]
-  receiptItems       PurchaseReceiptItem[]
+  // productions        Production[] // Como producto final en producciones
+  movements          InventoryMovement[] // Movimientos de entrada y salida
+  purchaseOrderItems PurchaseOrderItem[] 
+  receiptItems       PurchaseReceiptItem[] 
   saleItems          SaleItem[] // Relación inversa agregada
 }
 
@@ -158,7 +155,7 @@ enum ProductType {
   CONSUMABLE // Aceite, gas
 }
 
-model ProductStorageUnit {
+model Unit {
   id          Int      @id @default(autoincrement())
   name        String
   description String?
@@ -167,6 +164,8 @@ model ProductStorageUnit {
   updatedAt   DateTime @default(now()) @updatedAt
 
   products Product[]
+  recipes  Recipe[]
+  recipeIngredients RecipeIngredient[]
 }
 
 model ProductCategory {
@@ -202,10 +201,11 @@ model InventoryMovement {
   // USER QUE HA HECHO EL MOVIMIENTO
   user              User?                 @relation(fields: [userId], references: [id])
   userId            String?
-  // PRODUCTION
+  // TODO: VER SI ESTE MODELO REALMENTE ES NECESARIO EN EL FUTURO PRODUCTION
   // En caso de que el movimiento sea de entrada, se debe indicar la produccion
-  productionId      Int?
-  production        Production?           @relation(fields: [productionId], references: [id])
+  // productionId      Int?
+  // production        Production?           @relation(fields: [productionId], references: [id])
+  
   // PURCHASE RECEIPT
   // En caso de que el movimiento sea de salida, se debe indicar la recepcion
   purchaseReceiptId Int?
@@ -226,51 +226,61 @@ model Recipe {
   name        String   // "BREAD RECIPE"
   description String?
   yield       Int      // Cantidad que produce (example: 10 breads)
-  unit        String   // Unit of measure (example: "units")
-  isActive    Boolean  @default(true)
+  isActive    Boolean  @default(true) 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @default(now()) @updatedAt
+  
+  unitId      Int // Unit of the recipe
+  unit        Unit @relation(fields: [unitId], references: [id])
 
   // RELATIONS
-  ingredients RecipeIngredient[]
-  products    Product[] // Products that use this recipe
-  productions Production[]
+  ingredients RecipeIngredient[] // Ingredients used in the recipe
 }
 
 model RecipeIngredient {
   id        Int     @id @default(autoincrement())
+
   recipe    Recipe  @relation(fields: [recipeId], references: [id])
-  recipeId  Int
+  recipeId  Int // recipe that uses the ingredient
+
   product   Product @relation(fields: [productId], references: [id])
-  productId Int
+  productId Int // product that is used in the recipe
+
   quantity  Float // Amount needed
-  unit      String // Unit of measure
+  
+  unitId      Int // Unit of the ingredient
+  unit        Unit @relation(fields: [unitId], references: [id])
 
   @@unique([recipeId, productId])
 }
 
-model Production {
-  id          Int              @id @default(autoincrement())
-  recipe      Recipe           @relation(fields: [recipeId], references: [id])
-  recipeId    Int
-  quantity    Int // Cantidad producida
-  status      ProductionStatus @default(IN_PROGRESS)
-  startedAt   DateTime         @default(now())
-  completedAt DateTime?
-  user        User             @relation(fields: [userId], references: [id])
-  userId      String
-  productId   Int
-  product     Product          @relation(fields: [productId], references: [id])
+// model Production {
+//   id          Int              @id @default(autoincrement())
 
-  // RELATIONS
-  movements InventoryMovement[]
-}
+//   recipeId    Int
+//   recipe      Recipe           @relation(fields: [recipeId], references: [id])
+  
+//   quantity    Int // Cantidad producida
+//   status      ProductionStatus @default(IN_PROGRESS)
 
-enum ProductionStatus {
-  IN_PROGRESS
-  COMPLETED
-  CANCELLED
-}
+//   startedAt   DateTime         @default(now())
+//   completedAt DateTime?
+  
+//   user        User             @relation(fields: [userId], references: [id])
+//   userId      String
+  
+//   productId   Int
+//   product     Product          @relation(fields: [productId], references: [id])
+
+//   // RELATIONS
+//   movements InventoryMovement[]
+// }
+
+// enum ProductionStatus {
+//   IN_PROGRESS
+//   COMPLETED
+//   CANCELLED
+// }
 
 model Supplier {
   id        String   @id @default(uuid())
@@ -286,32 +296,21 @@ model Supplier {
   // RELATIONS
   purchaseOrders PurchaseOrder[]
   invoices       Invoice[]
+  products       Product[]
 }
 
 model PurchaseOrder {
   // BASIC COLUMNS
   id                   Int                 @id @default(autoincrement())
   orderNumber          String              @unique // PO-2024-001
-  status               PurchaseOrderStatus @default(PENDING)
   notes                String?
   totalAmount          Float
   // DELIVEY DATES
   expectedDeliveryDate DateTime
   actualDeliveryDate   DateTime?
-
+  // SUPPLIER
   supplierId           String
   supplier             Supplier            @relation(fields: [supplierId], references: [id])
-  // USERS INVOLVED
-  createdBy          String
-  user               User      @relation(fields: [createdBy], references: [id])
-  approvedBy         String?
-  approvedByUser     User?     @relation("ApprovedBy", fields: [approvedBy], references: [id])
-  approvedAt         DateTime?
-  cancelledBy        String?
-  cancelledByUser    User?     @relation("CancelledBy", fields: [cancelledBy], references: [id])
-  cancelledAt        DateTime?
-  cancellationReason String?
-
   // HISTORY DATES
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
@@ -319,6 +318,19 @@ model PurchaseOrder {
   // RELATIONS
   items    PurchaseOrderItem[]
   receipts PurchaseReceipt[]
+  history  PurchaseOrderHistory[]
+}
+
+model PurchaseOrderHistory {
+  id          Int      @id @default(autoincrement())
+  status      PurchaseOrderStatus @default(PENDING)
+  statusAt    DateTime
+  notes       String?
+
+  userId      String     
+  user        User        @relation(fields: [userId], references: [id])
+  orderId     Int
+  order       PurchaseOrder @relation(fields: [orderId], references: [id])
 }
 
 enum PurchaseOrderStatus {

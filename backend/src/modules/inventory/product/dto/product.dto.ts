@@ -35,12 +35,21 @@ export class ProductDto {
   @Transform(({ value }) => Number(value))
   @IsNumber()
   @IsNotEmpty()
+  cost: number;
+
+  @Transform(({ value }) => Number(value))
+  @IsNumber()
+  @IsNotEmpty()
   storageUnitId: number;
 
   @Transform(({ value }) => Number(value))
   @IsNumber()
   @IsNotEmpty()
   categoryId: number;
+
+  @IsNumber()
+  @IsNotEmpty()
+  supplierId: string;
 
   @IsBoolean()
   @IsOptional()
@@ -78,6 +87,11 @@ export class ResponseProductDto {
   @IsNumber()
   @IsNotEmpty()
   price: number;
+
+  @Transform(({ value }) => Number(value))
+  @IsNumber()
+  @IsNotEmpty()
+  cost: number;
 
   @IsNumber()
   isAvailable: boolean;

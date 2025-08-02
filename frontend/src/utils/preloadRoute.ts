@@ -4,6 +4,7 @@ export const preloadRoute = (route: string) => {
   link.href = route;
   document.head.appendChild(link);
 };
+// TODO: NO SE HA UTILIZADO TODAVIA PERO SE PUEDE AGREGAR
 // EXAMPLE
 // <button
 //   onMouseEnter={() => preloadRoute('/dashboard')}

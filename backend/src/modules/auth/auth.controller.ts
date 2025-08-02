@@ -38,6 +38,7 @@ export class AuthController {
   @Post('local/signin')
   @HttpCode(HttpStatus.OK)
   signinLocal(@Body() dto: AuthDto): Promise<ResponseDto<UserWithTokens>> {
+    console.log(dto)
     return this.authService.signinLocal(dto);
   }
 
