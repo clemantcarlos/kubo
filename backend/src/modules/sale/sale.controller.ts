@@ -10,10 +10,17 @@ import {
 import { SaleService } from './sale.service';
 import { CreateSaleDto, GetSalesQueryDto } from './dto/sale.dto';
 import { AtGuard } from '@/modules/auth/common/guards/at.guard';
+import { Public } from '../auth/common/decorators/public.decorator';
 
 @Controller('sale')
 export class SaleController {
   constructor(private readonly saleService: SaleService) {}
+
+  @Public()
+  @Get('product')
+  async getSaleProducts() {
+    return this.saleService.getSaleProducts();
+  }
 
   @Get()
   async getSales(@Query() query: GetSalesQueryDto) {

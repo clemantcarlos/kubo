@@ -23,10 +23,10 @@ import { promises as fs } from "fs";
 import { productSelect } from "./utils/const.prisma.query";
 import { ProductCategoryDto } from "./dto/product-category.dto";
 import {
-  GetProductStorageUnitDto,
-  ProductStorageUnitDto,
+  GetProductUnitDto,
+  ProductUnitDto,
 } from "./dto/product-storage-unit.dto";
-import { createImage } from "./utils/imageHandlers";
+import { createImage } from "@/utils/imageHandlers";
 
 @Injectable()
 export class ProductService {
@@ -163,7 +163,7 @@ export class ProductService {
       stock, 
       price, 
       cost, 
-      storageUnitId, 
+      unitId, 
       categoryId, 
       supplierId 
     } = product;
@@ -178,7 +178,7 @@ export class ProductService {
           stock,
           price,
           cost,
-          storageUnit: { connect: { id: storageUnitId } },
+          unit: { connect: { id: unitId } },
           category: { connect: { id: categoryId } },
           imageHash,
           imageUrl,
@@ -211,7 +211,7 @@ export class ProductService {
     file?: Express.Multer.File
   ): Promise<ResponseDto<ResponseProductDto>> {
     const parsedId = Number(id);
-    const { name, description, stock, price, cost, storageUnitId, categoryId } =
+    const { name, description, stock, price, cost, unitId, categoryId } =
       product;
 
     try {
@@ -236,7 +236,7 @@ export class ProductService {
             stock,
             price,
             cost,
-            storageUnit: { connect: { id: storageUnitId } },
+            unit: { connect: { id: unitId } },
             category: { connect: { id: categoryId } },
             imageHash,
             imageUrl,
@@ -256,7 +256,7 @@ export class ProductService {
           description,
           stock,
           price,
-          storageUnit: { connect: { id: storageUnitId } },
+          unit: { connect: { id: unitId } },
           category: { connect: { id: categoryId } },
         },
         select: productSelect,
@@ -411,7 +411,7 @@ export class ProductService {
     }
   }
   // STORAGE UNITS
-  async getAllStorageUnits(): Promise<GetProductStorageUnitDto[]> {
+  async getAllUnits(): Promise<GetProductUnitDto[]> {
     try {
       return await this.prisma.unit.findMany({
         select: {
@@ -424,16 +424,16 @@ export class ProductService {
       throw new BadRequestException(e);
     }
   }
-  async createStorageUnit(
-    unit: ProductStorageUnitDto
+  async createUnit(
+    unit: ProductUnitDto
   ): Promise<Unit> {
     try {
-      const newProductStorageUnit = await this.prisma.unit.create(
+      const newProductunit = await this.prisma.unit.create(
         {
           data: unit,
         }
       );
-      return newProductStorageUnit;
+      return newProductunit;
     } catch (e) {
       if (e instanceof Prisma.PrismaClientKnownRequestError) {
         if (e.code === "P2002") {

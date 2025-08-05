@@ -7,6 +7,20 @@ import { GetResponse, ResponseDto } from '@/interfaces/getResponse';
 export class SaleService {
   constructor(private readonly prisma: PrismaService) {}
 
+  async getSaleProducts() {
+    const ingredients = await this.prisma.recipeIngredient.findMany({
+      where: {
+        quantity: { gt: 0 },
+      },
+      select: {
+        product: true,
+        quantity: true,
+      },
+    });
+
+    console.log(ingredients);
+  }
+
   async getSales(query: GetSalesQueryDto): Promise<GetResponse<any[]>> {
     const { page = 1, limit = 10, customerId, dateFrom, dateTo, userId, status } = query;
     const skip = (Number(page) - 1) * Number(limit);

@@ -71,6 +71,7 @@ model UserRolePermission {
 
   permission   Permission @relation(fields: [permissionId], references: [id])
   permissionId String
+  
   role         UserRole   @relation(fields: [roleId], references: [id])
   roleId       Int
 
@@ -124,15 +125,13 @@ model Product {
   imageUrl    String?
   imageHash   String? @unique
   isAvailable Boolean @default(true)
-
-  // Nuevos campos
-  type     ProductType @default(RAW_MATERIAL)
+  type        ProductType @default(RAW_MATERIAL)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
 
-  storageUnit   Unit @relation(fields: [storageUnitId], references: [id])
-  storageUnitId Int
+  unit   Unit @relation(fields: [unitId], references: [id])
+  unitId Int
   category      ProductCategory    @relation(fields: [categoryId], references: [id])
   categoryId    Int
   supplier      Supplier           @relation(fields: [supplierId], references: [id])
@@ -141,11 +140,11 @@ model Product {
   // Relaciones
   orders             OrderItem[] // Como producto de ordene de compra
   ingredients        RecipeIngredient[] // Como ingrediente en otras recetas
-  // productions        Production[] // Como producto final en producciones
   movements          InventoryMovement[] // Movimientos de entrada y salida
   purchaseOrderItems PurchaseOrderItem[] 
   receiptItems       PurchaseReceiptItem[] 
   saleItems          SaleItem[] // Relación inversa agregada
+  recipeOutputs      RecipeOutput[]
 }
 
 enum ProductType {
@@ -166,6 +165,7 @@ model Unit {
   products Product[]
   recipes  Recipe[]
   recipeIngredients RecipeIngredient[]
+  recipeOutputs RecipeOutput[]
 }
 
 model ProductCategory {
@@ -176,15 +176,6 @@ model ProductCategory {
   updatedAt   DateTime @default(now()) @updatedAt
 
   products Product[]
-}
-
-model Task {
-  id          Int      @id @default(autoincrement())
-  title       String
-  description String?
-  status      String   @default("pending")
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @default(now()) @updatedAt
 }
 
 model InventoryMovement {
@@ -201,10 +192,6 @@ model InventoryMovement {
   // USER QUE HA HECHO EL MOVIMIENTO
   user              User?                 @relation(fields: [userId], references: [id])
   userId            String?
-  // TODO: VER SI ESTE MODELO REALMENTE ES NECESARIO EN EL FUTURO PRODUCTION
-  // En caso de que el movimiento sea de entrada, se debe indicar la produccion
-  // productionId      Int?
-  // production        Production?           @relation(fields: [productionId], references: [id])
   
   // PURCHASE RECEIPT
   // En caso de que el movimiento sea de salida, se debe indicar la recepcion
@@ -227,14 +214,23 @@ model Recipe {
   description String?
   yield       Int      // Cantidad que produce (example: 10 breads)
   isActive    Boolean  @default(true) 
+  
+  imageUrl    String?
+  imageHash   String? @unique
+
   createdAt   DateTime @default(now())
   updatedAt   DateTime @default(now()) @updatedAt
   
   unitId      Int // Unit of the recipe
   unit        Unit @relation(fields: [unitId], references: [id])
 
+  price Float? // Nuevo campo para precio de combos/productos finales
+
   // RELATIONS
   ingredients RecipeIngredient[] // Ingredients used in the recipe
+  outputs     RecipeOutput[]
+  versions    RecipeVersion[]
+
 }
 
 model RecipeIngredient {
@@ -248,39 +244,38 @@ model RecipeIngredient {
 
   quantity  Float // Amount needed
   
-  unitId      Int // Unit of the ingredient
+  unitId      Int // Unit of the ingredient 
   unit        Unit @relation(fields: [unitId], references: [id])
 
   @@unique([recipeId, productId])
 }
+model RecipeOutput {
+  id        Int      @id @default(autoincrement())
+  recipeId  Int // <-- receta de la que proviene
+  productId Int // <-- producto que genera
+  quantity  Float // <-- 
+  unitId    Int
 
-// model Production {
-//   id          Int              @id @default(autoincrement())
+  recipe    Recipe   @relation(fields: [recipeId], references: [id])
+  product   Product  @relation(fields: [productId], references: [id])
+  unit      Unit     @relation(fields: [unitId], references: [id])
 
-//   recipeId    Int
-//   recipe      Recipe           @relation(fields: [recipeId], references: [id])
-  
-//   quantity    Int // Cantidad producida
-//   status      ProductionStatus @default(IN_PROGRESS)
+  @@unique([recipeId, productId])
+}
 
-//   startedAt   DateTime         @default(now())
-//   completedAt DateTime?
-  
-//   user        User             @relation(fields: [userId], references: [id])
-//   userId      String
-  
-//   productId   Int
-//   product     Product          @relation(fields: [productId], references: [id])
+model RecipeVersion {
+  id        Int      @id @default(autoincrement())
+  recipeId  Int
+  version   Int
+  name      String
+  description String?
+  yield     Int
+  price     Float?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
 
-//   // RELATIONS
-//   movements InventoryMovement[]
-// }
-
-// enum ProductionStatus {
-//   IN_PROGRESS
-//   COMPLETED
-//   CANCELLED
-// }
+  recipe    Recipe   @relation(fields: [recipeId], references: [id])
+}
 
 model Supplier {
   id        String   @id @default(uuid())

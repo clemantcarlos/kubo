@@ -11,7 +11,6 @@ import { ModeToggle } from "@/components/theme/ModeToggle";
 import { Toaster } from "sonner";
 //CONTEXT
 import { ThemeProvider } from "@/components/theme/ThemeProvider";
-import { GlobalProvider } from "./context/Global";
 // COMPONENTS
 import Spinner from "./components/global/Spinner";
 // CSS
@@ -212,12 +211,10 @@ createRoot(document.getElementById("root")!).render(
   <QueryClientProvider client={queryClient}>
     <ReactQueryDevtools />
     <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
-      <GlobalProvider>
-        <Suspense fallback={<Spinner />}>
-          <Spinner />
-          <RouterProvider router={router} />
-        </Suspense>
-      </GlobalProvider>
+      <Suspense fallback={<Spinner />}>
+        <Spinner />
+        <RouterProvider router={router} />
+      </Suspense>
       <Toaster theme="system" />
       <ModeToggle />
     </ThemeProvider>

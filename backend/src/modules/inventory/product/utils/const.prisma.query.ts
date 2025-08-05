@@ -8,5 +8,5 @@ export const productSelect = {
   isAvailable: true,
   imageUrl: true, 
   category: { select: { id:true, name: true } },
-  storageUnit: { select: { id:true, name: true, unit: true } },
+  unit: { select: { id:true, name: true, unit: true } },
 }

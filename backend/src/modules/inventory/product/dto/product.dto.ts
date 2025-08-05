@@ -40,7 +40,7 @@ export class ProductDto {
   @Transform(({ value }) => Number(value))
   @IsNumber()
   @IsNotEmpty()
-  storageUnitId: number;
+  unitId: number;
 
   @Transform(({ value }) => Number(value))
   @IsNumber()
@@ -102,7 +102,7 @@ export class ResponseProductDto {
 
   @IsNotEmpty()
   @IsObject()
-  storageUnit: { id?:number, name: string, unit: number};
+  unit: { id?:number, name: string, unit: number};
 
   @IsString()
   @IsOptional()

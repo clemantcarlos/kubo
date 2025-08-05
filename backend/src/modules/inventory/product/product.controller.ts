@@ -36,10 +36,9 @@ import { Public } from "../../auth/common/decorators/public.decorator";
 import { GetResponse, ResponseDto } from "@/interfaces/getResponse";
 // Utils
 import { extname } from "path";
-import { createHash } from "crypto";
 import {
-  GetProductStorageUnitDto,
-  ProductStorageUnitDto,
+  GetProductUnitDto,
+  ProductUnitDto,
 } from "./dto/product-storage-unit.dto";
 
 @Controller("inventory/product")
@@ -94,15 +93,15 @@ export class ProductController {
   // --- STORAGE UNITS --- 
   @Public()
   @Get('storage-unit')
-  async getAllProductStorageUnit(): Promise<GetProductStorageUnitDto[]> {
-    return this.productService.getAllStorageUnits();
+  async getAllProductStorageUnit(): Promise<GetProductUnitDto[]> {
+    return this.productService.getAllUnits();
   }
   @Public()
   @Post('storage-unit')
   async createProductStorageUnit(
-    @Body() productStorageUnit: ProductStorageUnitDto
+    @Body() productStorageUnit: ProductUnitDto
   ): Promise<Unit> {
-    return this.productService.createStorageUnit(productStorageUnit);
+    return this.productService.createUnit(productStorageUnit);
   }
   @Public()
   @Get()

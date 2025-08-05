@@ -6,7 +6,7 @@ import {
   IsString,
 } from 'class-validator';
 
-export class ProductStorageUnitDto {
+export class ProductUnitDto {
   @IsNumber()
   @IsOptional()
   id?: number;
@@ -32,7 +32,7 @@ export class ProductStorageUnitDto {
   updatedAt?: string;
 }
 // TODO: CHANGE TO GLOBAL DTO AND CHANGE NAME TO UNITDTO
-export class GetProductStorageUnitDto {
+export class GetProductUnitDto {
   @IsNumber()
   @IsNotEmpty()
   id: number;
