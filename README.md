@@ -1,240 +1,210 @@
 <div align="center">
 
-# 🍞 Kubo — POS & Inventory Management System
+🍞 Kubo — POS & Inventory Management System
 
-**Sistema de punto de venta y gestión de inventario para panaderías y restaurantes**
+Point of Sale and Inventory Management System for Bakeries and Restaurants
 
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.5-blue?logo=typescript)](https://www.typescriptlang.org/)
-[![NestJS](https://img.shields.io/badge/NestJS-10-red?logo=nestjs)](https://nestjs.com/)
-[![React](https://img.shields.io/badge/React-19-61dafb?logo=react)](https://react.dev/)
-[![Prisma](https://img.shields.io/badge/Prisma-6-2D3748?logo=prisma)](https://www.prisma.io/)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-336791?logo=postgresql)](https://www.postgresql.org/)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-06B6D4?logo=tailwindcss)](https://tailwindcss.com/)
-[![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
+[!TypeScript](https://www.typescriptlang.org/)
+[!NestJS](https://nestjs.com/)
+[!React](https://react.dev/)
+[!Prisma](https://www.prisma.io/)
+[!PostgreSQL](https://www.postgresql.org/)
+[!Tailwind CSS](https://tailwindcss.com/)
+[!License](LICENSE)
 
 </div>
 
-> **⚠️ Proyecto en desarrollo —** Este es un proyecto de aprendizaje en curso. Algunas funcionalidades están incompletas o en progreso. Está construido para practicar y reforzar conocimientos en desarrollo full-stack con TypeScript.
+> ⚠️ Work in Progress — This is a learning project in progress. Some features are incomplete or still under development. It was built to practice and reinforce full-stack development skills with TypeScript.
 
----
+***
+> 📚 Personal Portfolio — Kubo was developed as part of my training as a software developer. The main goal was to apply and consolidate concepts in software architecture, database design, JWT authentication, and modern UI development with React.
 
-> **📚 Portfolio Personal —** Kubo fue desarrollado como parte de mi proceso de formación como desarrollador de software. El objetivo principal era aplicar y consolidar conceptos de arquitectura de software, diseño de bases de datos, autenticación JWT, y desarrollo de interfaces modernas con React.
+***
+📋 About the Project
 
----
+> 📚 Learning Project: Kubo was developed as part of my training as a software developer. The main goal was to apply and consolidate concepts in software architecture, database design, JWT authentication, and modern UI development with React. This project is actively under development and contains incomplete features.
 
-## 📋 Sobre el Proyecto
+Kubo is a full-stack web application built as a learning project to manage operations for a bakery/cantina business. It combines a Point of Sale (POS) system for the counter with a complete back-office administration panel. The project is actively under development and contains incomplete features.
 
-> **📚 Proyecto de aprendizaje:** Kubo fue desarrollado como parte de mi proceso de formación como desarrollador de software. El objetivo principal era aplicar y consolidar conceptos de arquitectura de software, diseño de bases de datos, autenticación JWT, y desarrollo de interfaces modernas con React. Este proyecto está en desarrollo activo y contiene funcionalidades incompletas.
+Key Features
 
-**Kubo** es una aplicación web full-stack construida como proyecto de aprendizaje para gestionar las operaciones de un negocio de panadería/cantina. Combina un sistema de punto de venta (POS) para el mostrador con un panel de administración completo para el back-office. El proyecto está en desarrollo activo y contiene funcionalidades incompletas.
+Module	Description
+Point of Sale (POS)	Intuitive interface for processing register orders, table and waiter management
+Inventory Management	Product CRUD, stock control, inventory movement traceability
+Purchasing	Complete purchase order workflow: creation → approval → receiving → invoicing → payments
+Recipes/Production	Recipe definition with ingredients, outputs, and yield tracking
+Suppliers	Supplier registration and management with contact info and tax identification
+Authentication	JWT with access/refresh tokens, roles and granular permissions (RBAC)
+Documented API	Swagger UI integrated for interactive API exploration
+	> Note: This project is actively under development. The cart module, some reports, and advanced features are still under construction.
 
-### Principales Funcionalidades
+***
+🏗️ Architecture
 
-| Módulo | Descripción |
-|--------|-------------|
-| **Punto de Venta (POS)** | Interfaz intuitiva para procesar pedidos en caja, gestión de mesas y meseros |
-| **Gestión de Inventario** | CRUD de productos, control de stock, trazabilidad de movimientos de inventario |
-| **Compras** | Flujo completo de órdenes de compra: creación → aprobación → recepción → facturación → pagos |
-| **Recetas/Producción** | Definición de recetas con ingredientes, salidas y control de rendimiento |
-| **Proveedores** | Registro y gestión de proveedores con información de contacto e identificación fiscal |
-| **Autenticación** | JWT con access/refresh tokens, roles y permisos granulares (RBAC) |
-| **API Documentada** | Swagger UI integrado para exploración interactiva de la API |
-
-> **Nota:** Este proyecto está en desarrollo activo. El módulo de carrito, algunos reportes y funcionalidades avanzadas aún se encuentran en construcción.
-
----
-
-## 🏗️ Arquitectura
-
-```
 kubo-master/
 ├── frontend/          # React 19 + Vite + Tailwind CSS + shadcn/ui
 │   ├── src/
-│   │   ├── modules/   # Módulos por dominio (auth, pos, inventory, restaurant)
-│   │   ├── components/# Componentes compartidos y UI (shadcn/ui)
-│   │   ├── services/  # Capa de servicios HTTP
+│   │   ├── modules/   # Domain modules (auth, pos, inventory, restaurant)
+│   │   ├── components/# Shared components and UI (shadcn/ui)
+│   │   ├── services/  # HTTP service layer
 │   │   ├── queryHooks/# TanStack React Query hooks
-│   │   └── lib/       # Utilidades y configuración
+│   │   └── lib/       # Utilities and configuration
 │   └── ...
 │
 ├── backend/           # NestJS + Prisma + PostgreSQL
 │   ├── prisma/
-│   │   ├── schema.prisma          # Schema de base de datos (25+ modelos)
-│   │   ├── migrations/            # 13 migraciones de DB
+│   │   ├── schema.prisma          # Database schema (25+ models)
+│   │   ├── migrations/            # 13 DB migrations
 │   │   └── SCHEMA_DOCUMENTATION.txt
 │   ├── src/
-│   │   ├── modules/   # Módulos por dominio (auth, inventory, sale, cart)
-│   │   ├── prisma/    # Servicio global de Prisma
-│   │   ├── utils/     # Utilidades (regex, hashing, imágenes)
-│   │   └── interfaces/# Tipos de respuesta estándar
-│   └── test/          # Tests unitarios y e2e
+│   │   ├── modules/   # Domain modules (auth, inventory, sale, cart)
+│   │   ├── prisma/    # Global Prisma service
+│   │   ├── utils/     # Utilities (regex, hashing, images)
+│   │   └── interfaces/# Standard response types
+│   └── test/          # Unit and e2e tests
 │
 └── package.json       # pnpm workspace root
-```
 
----
+***
+🛠️ Tech Stack
 
-## 🛠️ Stack Tecnológico
+Backend
 
-### Backend
+Framework: NestJS with modular architecture
+ORM: Prisma with PostgreSQL
+Authentication: Passport.js + JWT (access + refresh tokens)
+Validation: class-validator + class-transformer
+Documentation: Swagger/OpenAPI
+Testing: Jest + Supertest
+File Upload: Multer
 
-- **Framework:** NestJS con arquitectura modular
-- **ORM:** Prisma con PostgreSQL
-- **Autenticación:** Passport.js + JWT (access + refresh tokens)
-- **Validación:** class-validator + class-transformer
-- **Documentación:** Swagger/OpenAPI
-- **Testing:** Jest + Supertest
-- **Subida de archivos:** Multer
+Frontend
 
-### Frontend
+Framework: React 19 with TypeScript
+Build Tool: Vite with SWC
+Styling: Tailwind CSS 4 + shadcn/ui (New York style)
+Routing: React Router 7
+Server State: TanStack React Query 5
+Forms: React Hook Form + Zod
+Tables: TanStack React Table
+Icons: Lucide React
+Notifications: Sonner
+Theming: next-themes (dark/light mode)
+Encryption: CryptoJS (AES in localStorage)
 
-- **Framework:** React 19 con TypeScript
-- **Build Tool:** Vite con SWC
-- **Estilos:** Tailwind CSS 4 + shadcn/ui (New York style)
-- **Routing:** React Router 7
-- **State Server:** TanStack React Query 5
-- **Formularios:** React Hook Form + Zod
-- **Tablas:** TanStack React Table
-- **Iconos:** Lucide React
-- **Notificaciones:** Sonner
-- **Tema:** next-themes (dark/light mode)
-- **Encriptación:** CryptoJS (AES en localStorage)
+Tools
 
-### Herramientas
+Monorepo: pnpm workspaces
+Linter: ESLint
+Formatter: Prettier
+IDE: VS Code with 89 recommended extensions
 
-- **Monorepo:** pnpm workspaces
-- **Linter:** ESLint
-- **Formatter:** Prettier
-- **IDE:** VS Code con 89 extensiones recomendadas
+***
+🚀 Getting Started
 
----
+Prerequisites
 
-## 🚀 Inicio Rápido
+Node.js >= 18
+pnpm >= 9
+PostgreSQL >= 14
 
-### Prerrequisitos
+Installation
 
-- Node.js >= 18
-- pnpm >= 9
-- PostgreSQL >= 14
-
-### Instalación
-
-```bash
-# Clonar el repositorio
-git clone https://github.com/tu-usuario/kubo-master.git
+# Clone the repository
+git clone https://github.com/your-username/kubo-master.git
 cd kubo-master
 
-# Instalar dependencias
+# Install dependencies
 pnpm install
-```
 
-### Configuración
+Configuration
 
-```bash
 # Backend
 cd backend
 cp .env.example .env
-# Editar .env con tu configuración de PostgreSQL
+# Edit .env with your PostgreSQL configuration
 
 # Frontend
 cd ../frontend
 cp .env.example .env
-# Editar .env con la URL de tu API
-```
+# Edit .env with your API URL
 
-### Variables de Entorno
+Environment Variables
 
-**Backend (`.env`)**
+Backend (.env)
 
-```env
 DATABASE_URL="postgresql://user:password@localhost:5432/kubo"
 PORT=3000
-```
 
-**Frontend (`.env`)**
+Frontend (.env)
 
-```env
 API_URL=http://localhost:3000
-VITE_ENCRYPTION_KEY=tu-clave-secreta
-```
+VITE_ENCRYPTION_KEY=your-secret-key
 
-### Ejecutar
+Running the Application
 
-```bash
-# Desde la raíz del proyecto
-pnpm start:backend    # Inicia NestJS en http://localhost:3000
-pnpm start:frontend   # Inicia Vite en http://localhost:5173
-```
+# From the project root
+pnpm start:backend    # Starts NestJS at http://localhost:3000
+pnpm start:frontend   # Starts Vite at http://localhost:5173
 
-### Base de Datos
+Database Setup
 
-```bash
 cd backend
 
-# Ejecutar migraciones
+# Run migrations
 pnpm run prisma:dev
 
-# Generar cliente Prisma
+# Generate Prisma client
 npx prisma generate
 
-# (Opcional) Sembrar datos de prueba
+# (Optional) Seed test data
 curl http://localhost:3000/start
-```
 
----
+***
+📚 Documentation
 
-## 📚 Documentación
+Detailed documentation can be found at:
 
-La documentación detallada se encuentra en:
+Database Schema: backend/prisma/SCHEMA_DOCUMENTATION.txt — Complete documentation of 25+ models, relationships, and operation flows
+Purchase Orders: backend/src/modules/inventory/purchase/PURCHASE_SERVICE_DOCUMENTATION.txt — Full purchase order lifecycle with state diagrams
+Inventory Movements: backend/src/modules/inventory/movement/INVENTORY_MOVEMENT_MODULE_DOCUMENTATION.txt — Types, auditing, and security considerations
+Swagger API: Available at http://localhost:3000/api when running the backend
 
-- **Schema de Base de Datos:** [`backend/prisma/SCHEMA_DOCUMENTATION.txt`](backend/prisma/SCHEMA_DOCUMENTATION.txt) — Documentación completa de los 25+ modelos, relaciones y flujos de operación
-- **Órdenes de Compra:** [`backend/src/modules/inventory/purchase/PURCHASE_SERVICE_DOCUMENTATION.txt`](backend/src/modules/inventory/purchase/PURCHASE_SERVICE_DOCUMENTATION.txt) — Ciclo de vida completo de órdenes de compra con diagramas de estado
-- **Movimientos de Inventario:** [`backend/src/modules/inventory/movement/INVENTORY_MOVEMENT_MODULE_DOCUMENTATION.txt`](backend/src/modules/inventory/movement/INVENTORY_MOVEMENT_MODULE_DOCUMENTATION.txt) — Tipos, auditoría y consideraciones de seguridad
-- **API Swagger:** Disponible en `http://localhost:3000/api` al ejecutar el backend
+***
+🧪 Testing
 
----
-
-## 🧪 Testing
-
-```bash
-# Backend - Tests unitarios
+# Backend - Unit tests
 cd backend
 pnpm run test
 
-# Backend - Tests con cobertura
+# Backend - Tests with coverage
 pnpm run test:cov
 
-# Backend - Tests E2E
+# Backend - E2E tests
 pnpm run test:e2e
 
 # Frontend - Lint
 cd frontend
 pnpm run lint
-```
 
----
+***
+📦 Available Commands
 
-## 📦 Comandos Disponibles
+Command	Description
+pnpm start:frontend	Start frontend development server
+pnpm start:backend	Start NestJS in watch mode
+pnpm run build	Production build
+pnpm run prisma:dev	Run Prisma migrations
+pnpm run test	Run unit tests
+pnpm run test:e2e	Run end-to-end tests
+pnpm run test:cov	Tests with coverage report
+pnpm run lint	Lint with ESLint
+pnpm run format	Format with Prettier
+	***
+🎨 System Design
 
-| Comando | Descripción |
-|---------|-------------|
-| `pnpm start:frontend` | Iniciar servidor de desarrollo del frontend |
-| `pnpm start:backend` | Iniciar NestJS en modo watch |
-| `pnpm run build` | Build de producción |
-| `pnpm run prisma:dev` | Ejecutar migraciones de Prisma |
-| `pnpm run test` | Ejecutar tests unitarios |
-| `pnpm run test:e2e` | Ejecutar tests end-to-end |
-| `pnpm run test:cov` | Tests con reporte de cobertura |
-| `pnpm run lint` | Linting con ESLint |
-| `pnpm run format` | Formatear con Prettier |
+Purchase Workflow
 
----
-
-## 🎨 Diseño del Sistema
-
-### Flujo de Compras
-
-```
 ┌──────────┐    ┌──────────┐    ┌──────────┐    ┌──────────┐    ┌──────────┐
 │ PENDING  │───▶│ APPROVED │───▶│ RECEIVED │───▶│INVOICED  │───▶│  PAID    │
 └──────────┘    └──────────┘    └──────────┘    └──────────┘    └──────────┘
@@ -242,11 +212,9 @@ pnpm run lint
      └───────┐       │       ┌───────┘       ┌───────┘
              ▼       ▼       ▼               ▼
         CANCELLED         PARTIAL         OVERDUE
-```
 
-### Modelos de Base de Datos (25+)
+Database Models (25+)
 
-```
 User ─┬─ Role ─── Permission
       │
 Sale ─┴─ SaleItem ─── Product
@@ -261,63 +229,57 @@ InventoryMovement ─── Product
       │
 Recipe ─┬─ RecipeIngredient ─── Product
         └─ RecipeOutput ─── Product
-```
 
----
-
-## 📸 Capturas de Pantalla
+***
+📸 Screenshots
 
 <details>
-<summary>🖥️ Panel de Administración</summary>
+<summary>🖥️ Administration Panel</summary>
 
-- Dashboard con métricas de ventas e inventario
-- Gestión de productos con imágenes
-- Órdenes de compra con flujo de aprobación
-- Reportes de inventario
+Dashboard with sales and inventory metrics
+Product management with images
+Purchase orders with approval workflow
+Inventory reports
 
 </details>
 
 <details>
-<summary>🛒 Punto de Venta</summary>
+<summary>🛒 Point of Sale</summary>
 
-- Interfaz de caja rápida
-- Selección de productos
-- Gestión de mesas
-- Procesamiento de pedidos
+Quick register interface
+Product selection
+Table management
+Order processing
 
 </details>
 
----
+***
+🔧 Project Status — Incomplete Features
 
-## 🔧 Estado del Proyecto — Funcionalidades incompletas
+Complete cart module (currently a stub)
+Sales reports and charts
+Real-time notifications
+Offline mode for POS
+Thermal printer integration
+Petty cash management
+Customer loyalty program
 
-- [ ] Módulo de carrito completo (actualmente stub)
-- [ ] Reportes y gráficos de ventas
-- [ ] Notificaciones en tiempo real
-- [ ] Modo offline para el POS
-- [ ] Integración con impresoras térmicas
-- [ ] Gestión de caja chica
-- [ ] Programa de fidelización de clientes
+***
+📄 License
 
----
+This project is licensed under the MIT License. See LICENSE for more details.
 
-## 📄 Licencia
+***
+👤 Author
 
-Este proyecto está bajo la licencia MIT. Ver [LICENSE](LICENSE) para más detalles.
+Carlos
 
----
+[!GitHub](https://github.com/your-username)
+[!LinkedIn](https://linkedin.com/in/your-profile)
 
-## 👤 Autor
-
-**Carlos**
-
-[![GitHub](https://img.shields.io/badge/GitHub-181717?logo=github)](https://github.com/tu-usuario)
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-0A66C2?logo=linkedin)](https://linkedin.com/in/tu-perfil)
-
----
-
+***
 <div align="center">
 
-**Si este proyecto te resultó útil, ¡dale una ⭐!**
+If you found this project helpful, give it a ⭐!
 
 </div>
